@@ -1,0 +1,309 @@
+function OUTPUT_FORMATS = ProcessResults(fnames, outputformat, batchmode)
+  % PROCESSRESULTS - Process results files into analysis file formats.
+  %
+  % Usage:
+  %
+  %  ProcessResults(fnames, outputformat, batchmode)
+  %    fnames       : results filename or cell array of filenames
+  %    outputformat : indicator of type of output file to create
+  %                     'format1'
+  %                     'headturn'
+  %                      ... (TBD)
+  %    batchmode    : control whether results are consolidated into a single output file
+  %                     'single' - process file-by-file (default)
+  %                     'group'  - consolidate results into a single file
+  %
+  %
+  % 2010-08-26 : Created by Robert H. Olson, Ph.D., rolson@waisman.wisc.edu
+  
+  %% Validate Arguments
+
+  % Make sure outputformat is one of the defined formats
+  OUTPUT_FORMATS = {'Format 1' 'Headturn'};
+  if nargin == 0
+    return
+  end
+  
+  OFidx = strcmpi(outputformat,OUTPUT_FORMATS);
+  if ~any(OFidx)
+    OFidx = 1;
+    warning('ProcessResults:invalidOutputFormat','Output format %s is invalid; format %s will be used instead.',outputformat,OUTPUT_FORMATS{OFidx});
+  end
+  
+  % fnames is a cell array of strings or a string.
+  % If a single string, put in a cell for consistency.
+  if ~iscell(fnames)
+    fnames = {fnames};
+  end
+  
+
+
+  
+  % Make sure that batchmode is valid
+  BATCH_MODES = {'single' 'group'};
+  if nargin < 3
+    batchmode = 'single'; % default
+  end
+  BMidx = strcmpi(batchmode, BATCH_MODES);
+  if ~any(BMidx)
+    BMidx = 1;
+    warning('ProcessResults:invalidBatchMode','Batch mode %s is invalid; mode %s will be used instead.',batchmode,BATCH_MODES{BMidx});
+  end
+  
+  %% Determine output file permissions
+  group_output = strcmpi(BATCH_MODES{BMidx},'group'); 
+  if group_output
+    filepermission = 'a'; % create or append
+  else
+    filepermission = 'w+'; % create or overwrite
+  end
+  
+  %% Process Files
+  
+  write_header = true; % only write header once for combined output file
+  
+  for fileidx = 1:length(fnames)
+    fname = fnames{fileidx};
+    
+    % Read file and evaluate to create structure S
+    S = [];
+    
+    [fid, msg] = fopen(fname,'r');
+    if fid < 0
+      warning('ProcessResults:fileOpenFailed','Unable to open file %s : %s',fname,msg);
+      continue % skip to next file
+    end    
+    
+    ss = textscan(fid,'%[^\n]');
+    ss = ss{1};
+    fclose(fid);
+    eval(sprintf('%s\n',ss{:}));
+    
+    
+    % Process file into suitable form
+    switch find(OFidx)
+      case 1
+        [headers, data, datafmt] = createOutput_format1(S);
+      case 2
+        [headers, data, datafmt] = createOutput_headturn(S);
+      otherwise
+        fprintf(1,'find(OFidx) = '), disp(find(OFidx))
+        error('ProcessResults:unexpectedValue','find(OFidx) has an unexpected value.')
+    end
+    
+    % Generate a filename based on the old filename and the output format.
+    [fppath, fpname] = fileparts(fname);
+    if strcmpi(BATCH_MODES{BMidx},'group')
+      outputfilename = fullfile(fppath,[datestr(now(),'YYYY-mm-dd') '_Combined_Results_' OUTPUT_FORMATS{OFidx} '.txt']);
+    else
+      outputfilename = fullfile(fppath,[fpname '_' OUTPUT_FORMATS{OFidx} '.txt']);
+    end
+    
+    % Open file for output
+    [ofid, msg] = fopen(outputfilename,filepermission);
+    if ofid < 0
+      warning('ProcessResults:fileOpenFailed','Unable to open file %s : %s',outputfilename,msg);
+      continue % skip to next file
+    end
+    
+    % Write header
+    if write_header
+      fprintf(ofid,'%s\n',headers);
+      if strcmpi(BATCH_MODES{BMidx},'group'), write_header = false; end
+    end
+    
+    % Write output
+    fprintf(ofid,datafmt,data{:});
+    
+    % Close file
+    fclose(ofid);
+    
+  end
+end
+%% Process results to create output
+% createOutput_xxx functions take a results structure and provide three outputs:
+%  headers : Delimited header line; will be printed as the first line of the output file.
+%  data    : 2-d cell array containing data.  Rows of "data" correspond to columns in the output file.
+%  datafmt : format specification string used in writing output: fprintf(fid, datafmt, data{:}).  
+
+function [headers, data, datafmt] = createOutput_format1(S)
+  
+  
+  % Format: one row per event (9 + 2(number of OLs) columns
+  % Columns:
+  %  1 Experiment ID
+  %  2 Subject ID
+  %  3 Date/Time
+  %  4 Phase
+  %  5 Trial
+  %  6 Event Name
+  %  7 Event Number (this is a little bit ambiguous...)
+  %  8 Event Filename
+  %  9 Output Location(s)
+  %  10, 12, ... OLn Key Count (Number of keypresses during event)
+  %  11, 13, ... OLn Key Time  (Total keydown time during event)
+  % 
+  %
+  %  -- Optional Fields --
+  %  Gender
+  %  Birthdate
+  %  List
+  %  Condition_1
+  %  Condition_2
+  %  Condition_3
+  
+  col_count = 9 + 2*S.OL.NumOL;
+  
+  
+  headers = [sprintf('ExpID\tSubjectID\tDateTime\tPhase\tTrial\tEventName\tEventNo\tEventFile\tOutputLocation\t') ...
+    sprintf('OL_%d_Count\tOL_%d_Duration\t',[(1:S.OL.NumOL)' (1:S.OL.NumOL)']')];
+  
+  datafmt = [repmat('%s\t',1,9) repmat('%d\t%f\t',1,S.OL.NumOL) '\n'];
+  
+  
+  event_ctr = 0;
+  
+  % Loop over events in S.Results
+  
+  % First count the events...
+  for t = 1:length(S.Results.Trials)
+    for evt = 1:length(S.Results.Trials(t).Events)
+      event_ctr = event_ctr + 1;
+    end
+  end
+  
+  % Create cell array to store results
+  data = cell(event_ctr,col_count);
+  
+  event_ctr = 0;
+  for t = 1:length(S.Results.Trials)
+    PhaseNumber = find(strcmp(S.Results.Trials(t).PhaseName,{S.Experiment.Phases.Name}),1);
+    ItemNumber = find(strcmp(S.Results.Trials(t).ItemName,{S.Experiment.Phases(PhaseNumber).Items.Name}),1);
+    
+    % Replace empty values of PressTime and ReleaseTime with NaN.
+    % This eases filtering of Responses by time.
+    empty_press = cellfun('isempty',{S.Results.Trials(t).Responses.PressTime});
+    empty_release = cellfun('isempty',{S.Results.Trials(t).Responses.ReleaseTime});
+    [S.Results.Trials(t).Responses(empty_press).PressTime] = deal(nan);
+    [S.Results.Trials(t).Responses(empty_release).ReleaseTime] = deal(nan);
+    
+    for evt = 1:length(S.Results.Trials(t).Events)
+      event_ctr = event_ctr + 1;
+      data{event_ctr,1} = S.Experiment.Name; 
+      data{event_ctr,2} = S.Results.SubjectID;
+      data{event_ctr,3} = S.Results.DateTime;
+      data{event_ctr,4} = S.Results.Trials(t).PhaseName;
+      data{event_ctr,5} = S.Results.Trials(t).ItemName;
+      data{event_ctr,6} = S.Results.Trials(t).Events(evt).EventName;
+      
+      EventNumber = find(strcmp(data{event_ctr,6},{S.Experiment.Phases(PhaseNumber).Items(ItemNumber).Events.Name}),1);
+      
+      data{event_ctr,7} = num2str(EventNumber);
+      data{event_ctr,8} = S.Experiment.Phases(PhaseNumber).Items(ItemNumber).Events(EventNumber).StimulusFilename;
+      data{event_ctr,9} = num2str(S.Results.Trials(t).Events(evt).Location);
+      
+      % Response Summary: Count, Duration for each OL key
+      for k = 1:S.OL.NumOL
+        
+        % look for responses where the keypress matches the keypress defined for the k_th OL
+        ol_Responses = strcmp(S.OL.OL(k).Key,{S.Results.Trials(t).Responses.Keypress});            % length = # Responses
+        
+        % Count keypresses with a PressTime between the start and end times of the event
+        ol_PressTime = [S.Results.Trials(t).Responses(ol_Responses).PressTime];                    % length = # Responses of current OL
+        ol_ReleaseTime = [S.Results.Trials(t).Responses(ol_Responses).ReleaseTime];
+        ol_Duration = [S.Results.Trials(t).Responses(ol_Responses).Duration];
+        
+        
+        % Simple approach:  count only keypresses which begin during an event.  
+        k_dur = (ol_PressTime > S.Results.Trials(t).Events(evt).StartTime) & ...                   % length = # Responses of current OL
+          (ol_PressTime < S.Results.Trials(t).Events(evt).EndTime) & ...
+          ~isnan(ol_ReleaseTime); % (and which have a defined release time)
+        
+        data{event_ctr,8+2*k} = nnz(k_dur);              % Count
+        data{event_ctr,9+2*k} = sum(ol_Duration(k_dur)); % Duration
+        
+      end
+      
+    end
+  end
+  
+  data = data';
+end % createOutput
+
+function [headers, data, datafmt] = createOutput_headturn(S)
+  
+  % Headturn Experiment Output Filter
+  
+  % -- Existing Headturn Output Format --
+  % Column 1: experiment number (it always says 1, so we can just get rid of this column)
+  % Column 2: trial #
+  % Column 3: Block #
+  % Column 4: Test item #
+  % Column 5: Target side (0 = right; 1 = left)
+  % Column 6: Total attention time (i.e., time the baby spends looking directly at the side-light minus the 
+  %           time the baby looked away). This is the main column we use for data analysis.
+  % Column 7: Number of aways lasting < 2 seconds 
+  %             0 = the baby never looked away and the trial ended because it maxed out at 15 seconds
+  %             1 = the baby turned away once but looked back soon enough that the sound continued playing; 
+  %             2 = the baby turned away twice...
+  %             etc...
+  % Column 8: Test item # (not sure why this column repeats itself - we should just get rid of it)
+  % Column 9: Total time the side light blinks *before* the baby turns to look at it (sound does not play during this time)
+  % Column 10: Total time the side light blinks *after* the baby turns to look at it (i.e., total time the sound plays regardless of whether the baby is looking)
+  
+  % -- New Headturn Output Format --
+  % Column 1: trial # (1:n)
+  % Column 2: Block # (corresponds to phase)
+  % Column 3: Item # (placement of item within phase, prior to randomization, etc)
+  % Column 4: OL
+  % Column 5: Sum of "Correct" for the trial
+  % Column 6: Number of "Correct" keypresses - 1
+  % Column 7: Time before first "Correct" keypress and after the previous incorrect keypress
+  % Column 8: Time after first "Correct" keypress
+  
+  
+  headers = sprintf('Trial\tPhase\tItem\tLocation\tLooking Time (ms)\tLooks Away\tPreLook (ms)\tPostLook (ms)');
+  % Note that all columns contain (or can be construed to contain) numeric data
+  datafmt = [repmat('%d\t',1,8) '\n']; % assumes times can be expressed as integers -- using ms units, for example
+  
+  % Should have one row per trial
+  
+  nt = length(S.Results.Trials); % Number of trials
+  
+  data = zeros(nt,8);
+  
+  % loop over trials
+  for t = 1:nt
+    PhaseNumber = find(strcmp(S.Results.Trials(t).PhaseName,{S.Experiment.Phases.Name}),1);
+    ItemNumber = find(strcmp(S.Results.Trials(t).ItemName,{S.Experiment.Phases(PhaseNumber).Items.Name}),1);
+    
+    data(t,1) = t;
+    data(t,2) = PhaseNumber;
+    data(t,3) = ItemNumber; 
+    data(t,4) = S.Results.Trials(t).Events(2).Location; % The second event is the right or left light, by convention
+    
+    correct_responses = logical([S.Results.Trials(t).Responses.Correct]);
+    
+    if any(correct_responses)
+      data(t,5) = fix(sum([S.Results.Trials(t).Responses(correct_responses).Duration])*1000); % Sum, convert from s to ms  
+      data(t,6) = max(nnz(correct_responses)-1, 0); % Number of breaks between correct responses (at least 0)
+      
+      % Time between end of first event and start of first correct keypress
+      firsteventend = S.Results.Trials(t).Events(1).EndTime;
+      firstcorrect = S.Results.Trials(t).Responses(find(correct_responses,1)).PressTime;
+      data(t,7) = fix(etime(datevec(firstcorrect),datevec(firsteventend)) * 1000);
+      
+      % Time between first correct keypress and end of second event
+      secondeventend = S.Results.Trials(t).Events(2).EndTime;
+      data(t,8) = fix(etime(datevec(secondeventend),datevec(firstcorrect)) * 1000);
+    else
+      data(t,5:8) = 0; % If no correct responses, set everything to 0
+    end
+  end
+  
+  
+  % Convert to cell array and transpose
+  data = num2cell(data');
+  
+end % createOutput_headturn
+  
