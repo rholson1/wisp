@@ -18,7 +18,7 @@ function Experiment(SettingsFile)
   WorkingEvent = 1; % Selected Event in Event List
   
   % Constant Lists
-  G.ProgramName = 'The Program with No Name';
+  G.ProgramName = 'WISP';
   
   G.LevelNames = {'Experiment' 'Phase' 'Item' 'Event' 'Run'};
   G.PhaseOrder = {'Sequential' 'Random'};
@@ -48,10 +48,19 @@ function Experiment(SettingsFile)
 
   %% Initialization : Read Settings
   
+  % Directory for experiment settings persists between sessions
+  if ~ispref('SaffranExperiment','SettingsDir')
+    addpref('SaffranExperiment','SettingsDir',pwd);
+  end
+  SettingsDir = getpref('SaffranExperiment','SettingsDir');
+  
   % Prompt user to select a settings file
   if nargin == 0
-    [fname,pname] = uigetfile({'*.txt','Settings Files (*.txt)'},'Select Experiment Settings File');
-    if isequal(fname,0)
+    [fname,pname] = uigetfile({'*.txt','Settings Files (*.txt)'},'Select Experiment Settings File',SettingsDir);
+    
+    if isequal(fname,0) 
+      % No file was selected, so create a basic data structure S.
+      
       % Initialize S
       S.Results = [];
       S.Experiment = [];
@@ -80,9 +89,8 @@ function Experiment(SettingsFile)
       S.Paths.ResultsPath = '';
       S.Paths.StimulusPath = '';
       SettingsFile = '';
-      
-      
     else
+      setpref('SaffranExperiment','SettingsDir',pname);
       SettingsFile = [pname fname];
       LoadSettings(); % Load from SettingsFile
     end
@@ -738,6 +746,9 @@ function Experiment(SettingsFile)
   
   %% New_Experiment
   function New_Experiment(obj, events)
+    % Clear information about experiment
+    % Note that information about output locations, special file paths is not cleard
+    
     S.Results = [];
     S.Experiment = [];
     S.Experiment.Name = '';
@@ -753,8 +764,9 @@ function Experiment(SettingsFile)
   
   %% Load_Experiment
   function Load_Experiment(obj, events)
-    [fname,pname] = uigetfile('*.txt','Load Experiment Settings');
+    [fname,pname] = uigetfile('*.txt','Load Experiment Settings',getpref('SaffranExperiment','SettingsDir'));
     if ~isequal(fname,0)
+      setpref('SaffranExperiment','SettingsDir',pname);
       SettingsFile = [pname fname];
       LoadSettings()
       
