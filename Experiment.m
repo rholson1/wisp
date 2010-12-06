@@ -1024,10 +1024,8 @@ function Experiment(SettingsFile)
   
   %% Set Output Locations
   function SetOutputLocations(obj, events)
-    % Hide main figure and show the hardware configuration form
-    set(f,'visible','off');
+    % Show the hardware configuration form
     S.OL = ConfigureHardware(S.OL);
-    set(f,'visible','on');              % Redisplay main figure
   end
   
   %% txtExperiment_change
