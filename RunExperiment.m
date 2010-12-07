@@ -52,7 +52,8 @@ function R = RunExperiment(S)
     'KeyReleaseFcn', @key_release,...
     'WindowStyle','modal',...
     'Interruptible','off',...
-    'BusyAction','queue'); %  could be 'queue' or 'cancel'
+    'BusyAction','queue',...                     %  could be 'queue' or 'cancel'
+    'CloseRequestFcn', @CloseForm); 
   
   % Get the underlying Java reference (Based on code at undocumentedmatlab.com)
 %   warning off MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame
@@ -928,6 +929,15 @@ function R = RunExperiment(S)
   end
   %% figGotFocus - Callback for figure losing focus
   function figGotFocus(jAxis, jEventData, hFig)
+  end
+  
+  %% Close Form
+  function CloseForm(obj, evt)
+    %End the experiment
+    flag_EndExperiment = true;
+    flag_EndPhase = true;
+    flag_EndTrial = true;
+    
   end
   
 end % RunExperiment
