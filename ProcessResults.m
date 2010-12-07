@@ -280,8 +280,12 @@ function [headers, data, datafmt] = createOutput_headturn(S)
     data(t,1) = t;
     data(t,2) = PhaseNumber;
     data(t,3) = ItemNumber; 
-    data(t,4) = S.Results.Trials(t).Events(2).Location; % The second event is the right or left light, by convention
-    
+    if length(S.Results.Trials(t).Events) > 1
+      data(t,4) = S.Results.Trials(t).Events(2).Location; % The second event is the right or left light, by convention
+    else
+      continue
+    end
+
     correct_responses = logical([S.Results.Trials(t).Responses.Correct]);
     
     if any(correct_responses)
