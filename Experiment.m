@@ -45,7 +45,8 @@ function Experiment(SettingsFile)
   
   % S contains all information about the experiment
   S = [];
-
+  S0 = []; % S0 is a reference used to track whether S has changed.
+  
   %% Initialization : Read Settings
   
   % Directory for experiment settings persists between sessions
@@ -89,6 +90,8 @@ function Experiment(SettingsFile)
       S.Paths.ResultsPath = '';
       S.Paths.StimulusPath = '';
       SettingsFile = '';
+      
+      S0 = S;
     else
       setpref('SaffranExperiment','SettingsDir',pname);
       SettingsFile = [pname fname];
@@ -729,18 +732,25 @@ function Experiment(SettingsFile)
     pos = get(f,'Position');
     setpref('SaffranExperiment','Position',pos(1:2));
     
-    % Prompt to save settings
-    button = questdlg(['Save changes to ' SettingsFile '?'],'Save Settings');
-    switch button
-      case 'Yes'
-        % save settings and close figure
-        SaveSettings();
-        delete(f)
-      case 'No'
-        % close figure
-        delete(f)
-      otherwise
-        % do nothing
+    % Determine if changes have been made to S.
+    S.Results = [];
+    S0.Results = [];
+    
+    if isequal(S,S0)
+      % No changes have been made to S.  No need to save.
+      delete(f)
+    else
+      % Changes have been made to S.  Prompt to save.
+      button = questdlg(['Save changes to ' SettingsFile '?'],'Save Settings');
+      switch button
+        case 'Yes'
+          % save settings and close figure
+          SaveSettings();
+          delete(f)
+        case 'No'
+          % close figure
+          delete(f)
+      end
     end
   end
   
@@ -760,6 +770,8 @@ function Experiment(SettingsFile)
     
     CurrentLevel = 1;
     refreshGUI()
+    
+    S0 = S;  % Create a copy of S at its initial state. 
   end
   
   %% Load_Experiment
@@ -769,8 +781,7 @@ function Experiment(SettingsFile)
       setpref('SaffranExperiment','SettingsDir',pname);
       SettingsFile = [pname fname];
       LoadSettings()
-      
-      
+
       CurrentLevel = 1;
       refreshGUI()
     end
@@ -800,6 +811,8 @@ function Experiment(SettingsFile)
     fprintf(fid,'%s\n',ss{:});
     fclose(fid);
     set(f,'Name',[G.ProgramName ' - ' SettingsFile]);
+    
+    S0 = S;
   end
   
   %% LoadSettings
@@ -814,6 +827,8 @@ function Experiment(SettingsFile)
     end
     
     if ~isfield(S,'UsePsychPortAudio'), S.UsePsychPortAudio = true; end
+    
+    S0 = S; % Store copy of S to determine if changes have occurred later.
   end
   
   %% ChangeLevel
