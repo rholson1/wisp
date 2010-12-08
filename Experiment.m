@@ -1052,6 +1052,11 @@ function Experiment(SettingsFile)
   %% lstPhases_change : Phase List Callback
   function lstPhases_change(obj, events)
     WorkingPhase = get(obj, 'value');
+    
+    % Double-click to edit the phase
+    if strcmpi(get(f,'SelectionType'),'open')
+      cmenuEdit()
+    end
   end
   
   %% cboPhaseOrder_change
@@ -1067,6 +1072,11 @@ function Experiment(SettingsFile)
   %% lstItems_change
   function lstItems_change(obj, events)
     WorkingItem = get(obj,'value');
+    
+    % Double-click to edit the item
+    if strcmpi(get(f,'SelectionType'),'open')
+      cmenuEdit()
+    end
   end
   
   %% cboItemOrder_change
@@ -1163,6 +1173,11 @@ function Experiment(SettingsFile)
   %% lstEvents_change : Events List Callback
   function lstEvents_change(obj, events)
     WorkingEvent = get(obj, 'value');
+    
+    % Double-click to edit the event
+    if strcmpi(get(f,'SelectionType'),'open')
+      cmenuEdit()
+    end
   end
   
   %% cboRepeatOnFail_change
