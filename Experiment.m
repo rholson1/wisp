@@ -142,6 +142,7 @@ function Experiment(SettingsFile)
   gui.menu.help = uimenu(f,'Label','Help');
   uimenu(gui.menu.help,'Label','User''s Guide','callback',@showUsersGuide);
   uimenu(gui.menu.help,'Label','Structure of Stored Data','callback',@showDataStructure);
+  uimenu(gui.menu.help,'Label','Output Format Creation','callback',@showOutputFormatCreation);
   uimenu(gui.menu.help,'Label','About','Separator','on','callback',@showAboutBox);
   
   
@@ -1505,23 +1506,21 @@ function Experiment(SettingsFile)
     uicontrol(hDialog,'style','edit','units','normalized','position',[.05 .05 .9 .9],'fontsize',gui.fs,'max',2,'string',msg,'backgroundcolor','w','horizontalalign','left');
   end
 
-  %% Users Guide
+  %% Help - Users Guide
   function showUsersGuide(obj,evt)
     % Open PDF version of user's guide.
     open(fullfile(fileparts(mfilename('fullpath')), 'help', 'users_guide.pdf'));    
-    
-%     % Open Users Guide in a web browser
-%     UsersGuideURL = fullfile(fileparts(mfilename('fullpath')), 'help', 'Users_Guide.htm');
-%     stat = web(UsersGuideURL,'-browser');
-%     if stat > 0
-%       web(UsersGuideURL);
-%     end
   end
-%% Data Structure
+%% Help - Data Structure
   function showDataStructure(obj,evt)
     % Open PDF version of data structure help.
     open(fullfile(fileparts(mfilename('fullpath')), 'help', 'data_structure.pdf'));    
-
+  end
+  
+  %% Help - Output Format Creation
+  function showOutputFormatCreation(obj,evt)
+    % Open PDF version of Output Format Creation help.
+    open(fullfile(fileparts(mfilename('fullpath')), 'help', 'output_format_creation.pdf'));
   end
   
   %% Update_DateTime
