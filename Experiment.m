@@ -536,6 +536,12 @@ function Experiment(SettingsFile)
         gui.txtList = uicontrol(LevelPanel(5),'style','edit','fontsize',gui.fs,'position',[720 585 160 25],'backgroundcolor','w');
         gui.txtCondition = uicontrol(LevelPanel(5),'style','edit','fontsize',gui.fs,'position',[720 545 160 25],'backgroundcolor','w');
         
+        gui.chkInfoSlide = uicontrol(LevelPanel(5),'style','checkbox','fontsize',gui.fs,'position',[600 500 160 25],...
+          'string','Show Info Slides','callback',@chkInfoSlide_change);
+        gui.cboInfoSlideOL = uicontrol(LevelPanel(5),'style','popupmenu','fontsize',gui.fs,'position',[760 500 120 25],'backgroundcolor','w',...
+          'string','test','callback',@cboInfoSlideOL_change);
+        
+        
         uicontrol(LevelPanel(5),'style','pushbutton','fontsize',gui.fs,'position',[390 625 40 25],...
           'string','now','callback',@Update_DateTime);
         
@@ -713,9 +719,18 @@ function Experiment(SettingsFile)
         set(gui.txtExperimentID,'string',S.Experiment.Name);
         
         % Date/Time
-        %if isempty(deblank(get(gui.txtDateTime,'string')))
         set(gui.txtDateTime,'string',datestr(now(),'yyyy-mm-dd HH:MM'));
-        %end
+        
+        % Summary Slide OL
+        if ~isfield(S.Experiment,'ShowInfoSlide')
+          S.Experiment.ShowInfoSlide = 1;
+        end
+        if ~isfield(S.Experiment,'InfoSlideOL')
+          S.Experiment.InfoSlideOL = 1;
+        end
+        
+        set(gui.chkInfoSlide,'value',S.Experiment.ShowInfoSlide);
+        set(gui.cboInfoSlideOL,'string',{S.OL.OL.Name},'value',S.Experiment.InfoSlideOL);
         
     end
     
@@ -1541,6 +1556,16 @@ function Experiment(SettingsFile)
   %% Update_DateTime
   function Update_DateTime(obj, evt)
     set(gui.txtDateTime,'string',datestr(now(),'yyyy-mm-dd HH:MM'));    
+  end
+  
+  %% chkInfoSlide_change
+  function chkInfoSlide_change(obj, evt)
+    S.Experiment.ShowInfoSlide = get(obj,'value');
+  end
+  
+  %% cboInfoSlideOL_change
+  function cboInfoSlideOL_change(obj, evt)
+    S.Experiment.InfoSlideOL = get(obj,'value');
   end
   
   %% IIF function

@@ -127,6 +127,9 @@ function R = RunExperiment(S)
     PhaseSequence = 1:PhaseCount;                % Sequential Phase Order
   end
   
+  m = 0;
+  if S.Experiment.ShowInfoSlide, ShowInfoSlide, end
+  
   % --- Run each phase ---
   for m = 1:PhaseCount
     RunPhase(S.Experiment.Phases(PhaseSequence(m)))
@@ -135,6 +138,8 @@ function R = RunExperiment(S)
       break
     end
   end
+  
+  if S.Experiment.ShowInfoSlide, ShowInfoSlide, end
   
   % it might be a good idea to present some summary information about the
   % experiment before returning to the main program.
@@ -938,8 +943,44 @@ function R = RunExperiment(S)
     flag_EndPhase = true;
     flag_EndTrial = true;
     
+    if m==0, delete(f), end; % Allows for a graceful exit if something goes wrong before the experiment starts.
   end
   
+  %% Show Info Slide
+  function ShowInfoSlide()
+    % Display information about a particular experiment run.
+    % - Experiment Name
+    % - Condition
+    % - Subject Number
+    % - Date
+    
+    % Create a figure and use proportional scaling to use the space
+
+    % Determine the coordinates of the figure from the OL    
+    OLcoords = S.OL.OL(S.Experiment.InfoSlideOL).DisplayCoords;
+    
+    mp = get(0,'monitorposition'); % Get position of monitors
+    
+    % If fullscreen, get the coordinates of the screen
+    if S.OL.OL(S.Experiment.InfoSlideOL).Fullscreen
+      mpidx = mp(:,1)<=OLcoords(1) & mp(:,2)<=OLcoords(2) & mp(:,3)>=OLcoords(3) & mp(:,4)>=OLcoords(4);
+      OLcoords = mp(mpidx,:);
+    end
+    
+    % OLcoords have format [x1 y1 x2 y2] measured from upper left corner of primary screen.
+    % Position has format [x y w h], where x and y are measured from lower left corner of primary screen.
+    figpos = [OLcoords(1) mp(1,4)-OLcoords(4)+1 OLcoords(3)-OLcoords(1)+1 OLcoords(4)-OLcoords(2)+1];
+    
+    infoslidefig = figure('position',figpos,'menubar','none','Name','Information');
+    uicontrol(infoslidefig,'style','text','units','normalized','position',[0 0.75 1 0.25],'string',S.Experiment.Name,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+    uicontrol(infoslidefig,'style','text','units','normalized','position',[0 0.50 1 0.25],'string',S.Results.Condition,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+    uicontrol(infoslidefig,'style','text','units','normalized','position',[0 0.25 1 0.25],'string',S.Results.SubjectID,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+    uicontrol(infoslidefig,'style','text','units','normalized','position',[0 0.00 1 0.25],'string',S.Results.DateTime,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+    
+    % Close the figure after 2 seconds
+    pause(2)
+    delete(infoslidefig);
+  end
 end % RunExperiment
 
 %% INS - insert a vector into another vector at a specified position
