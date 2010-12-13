@@ -17,6 +17,8 @@ function Experiment(SettingsFile)
   WorkingItem = 1;  % Selected Item in Item List
   WorkingEvent = 1; % Selected Event in Event List
   
+  ConditionRow = 1; % Selected Row in Condition Table on Run Screen
+  
   % Constant Lists
   G.ProgramName = 'WISP';
   
@@ -522,7 +524,6 @@ function Experiment(SettingsFile)
         uicontrol(LevelPanel(5),'style','text','string','Gender','fontsize',gui.fs,'position',[600 660 120 25]);
         uicontrol(LevelPanel(5),'style','text','string','Birthdate','fontsize',gui.fs,'position',[600 620 120 25]);
         uicontrol(LevelPanel(5),'style','text','string','List','fontsize',gui.fs,'position',[600 580 120 25]);
-        uicontrol(LevelPanel(5),'style','text','string','Condition 1','fontsize',gui.fs,'position',[600 540 120 25]);
         
         gui.txtExperimentID = uicontrol(LevelPanel(5),'style','text','fontsize',gui.fs,'position',[220 705 160 25]);%,'backgroundcolor','w');
         gui.txtSubjectID = uicontrol(LevelPanel(5),'style','edit','fontsize',gui.fs,'position',[220 665 160 25],'backgroundcolor','w');
@@ -534,18 +535,32 @@ function Experiment(SettingsFile)
         gui.txtGender = uicontrol(LevelPanel(5),'style','edit','fontsize',gui.fs,'position',[720 665 160 25],'backgroundcolor','w');
         gui.txtBirthdate = uicontrol(LevelPanel(5),'style','edit','fontsize',gui.fs,'position',[720 625 160 25],'backgroundcolor','w');
         gui.txtList = uicontrol(LevelPanel(5),'style','edit','fontsize',gui.fs,'position',[720 585 160 25],'backgroundcolor','w');
-        gui.txtCondition = uicontrol(LevelPanel(5),'style','edit','fontsize',gui.fs,'position',[720 545 160 25],'backgroundcolor','w');
         
-        gui.chkInfoSlide = uicontrol(LevelPanel(5),'style','checkbox','fontsize',gui.fs,'position',[600 500 160 25],...
+        % Condition Table
+        gui.tblCondition = uitable(LevelPanel(5),'fontsize',gui.fs,'position',[600 450 300 120],...
+          'ColumnName',{'Condition Name','Value'},...
+          'ColumnEditable',true,...
+          'ColumnFormat',{'char','char'},...
+          'Data',{'',''},...
+          'ColumnWidth',{100 160},...
+          'CellSelectionCallback',@tblCondition_select); 
+        
+        uicontrol(LevelPanel(5),'style','pushbutton','fontsize',gui.fs,'position',[600 420 140 25],...
+          'string','New Condition','callback',@NewCondition);
+        uicontrol(LevelPanel(5),'style','pushbutton','fontsize',gui.fs,'position',[760 420 140 25],...
+          'string','Delete Condition','callback',@DeleteCondition);
+        
+        
+        gui.chkInfoSlide = uicontrol(LevelPanel(5),'style','checkbox','fontsize',gui.fs,'position',[600 280 160 25],...
           'string','Show Info Slides','callback',@chkInfoSlide_change);
-        gui.cboInfoSlideOL = uicontrol(LevelPanel(5),'style','popupmenu','fontsize',gui.fs,'position',[760 500 120 25],'backgroundcolor','w',...
+        gui.cboInfoSlideOL = uicontrol(LevelPanel(5),'style','popupmenu','fontsize',gui.fs,'position',[760 280 120 25],'backgroundcolor','w',...
           'string','test','callback',@cboInfoSlideOL_change);
         
         
         uicontrol(LevelPanel(5),'style','pushbutton','fontsize',gui.fs,'position',[390 625 40 25],...
           'string','now','callback',@Update_DateTime);
         
-        uicontrol(LevelPanel(5),'style','pushbutton','fontsize',gui.fs,'position',[220 380 320 30],...
+        uicontrol(LevelPanel(5),'style','pushbutton','fontsize',gui.fs,'position',[220 280 320 30],...
           'string','Run Experiment','Callback',@Run_Experiment);
         
     end
@@ -732,6 +747,10 @@ function Experiment(SettingsFile)
         set(gui.chkInfoSlide,'value',S.Experiment.ShowInfoSlide);
         set(gui.cboInfoSlideOL,'string',{S.OL.OL.Name},'value',S.Experiment.InfoSlideOL);
         
+        if ~isfield(S.Results,'Condition');
+          S.Results.Condition = {'' ''};
+        end
+        set(gui.tblCondition,'Data',S.Results.Condition);
     end
     
     set(LevelPanel(CurrentLevel),'visible','on');
@@ -1422,8 +1441,7 @@ function Experiment(SettingsFile)
     S.Results.Gender = get(gui.txtGender,'string');
     S.Results.Birthdate = get(gui.txtBirthdate,'string');
     S.Results.List = get(gui.txtList,'string');
-    S.Results.Condition = get(gui.txtCondition,'string');
-    
+    S.Results.Condition = get(gui.tblCondition,'data');
     
     S.Results.Trials = [];
     
@@ -1566,6 +1584,36 @@ function Experiment(SettingsFile)
   %% cboInfoSlideOL_change
   function cboInfoSlideOL_change(obj, evt)
     S.Experiment.InfoSlideOL = get(obj,'value');
+  end
+  
+  %% tblCondition_select
+  function tblCondition_select(obj, evt)
+    % Callback fires when the condition table selection changes
+    % Track which row is selected (needed for DeleteCondition)
+    disp('Condition_select')
+    if numel(evt.Indices) > 0
+      ConditionRow = evt.Indices(1);
+    else
+      ConditionRow = [];
+    end
+  end
+  
+  %% New Condition
+  function NewCondition(obj, evt)
+    % Add a row to the condition table.
+    condData = get(gui.tblCondition,'data');
+    condRows = size(condData,1);
+    condData{condRows+1,1} = '';
+    set(gui.tblCondition,'Data',condData);
+  end
+  
+  %% Delete Condition
+  function DeleteCondition(obj, evt)
+    disp('Delete Condition')
+    % Delete the selected row from the condition table
+    condData = get(gui.tblCondition,'data');
+    condData(ConditionRow,:) = []; % Delete a row
+    set(gui.tblCondition,'Data',condData);
   end
   
   %% IIF function
