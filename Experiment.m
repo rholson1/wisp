@@ -1590,7 +1590,6 @@ function Experiment(SettingsFile)
   function tblCondition_select(obj, evt)
     % Callback fires when the condition table selection changes
     % Track which row is selected (needed for DeleteCondition)
-    disp('Condition_select')
     if numel(evt.Indices) > 0
       ConditionRow = evt.Indices(1);
     else
@@ -1603,13 +1602,12 @@ function Experiment(SettingsFile)
     % Add a row to the condition table.
     condData = get(gui.tblCondition,'data');
     condRows = size(condData,1);
-    condData{condRows+1,1} = '';
+    condData(condRows+1,:) = {'',''};
     set(gui.tblCondition,'Data',condData);
   end
   
   %% Delete Condition
   function DeleteCondition(obj, evt)
-    disp('Delete Condition')
     % Delete the selected row from the condition table
     condData = get(gui.tblCondition,'data');
     condData(ConditionRow,:) = []; % Delete a row
