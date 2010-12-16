@@ -523,7 +523,6 @@ function Experiment(SettingsFile)
         
         uicontrol(LevelPanel(5),'style','text','string','Gender','fontsize',gui.fs,'position',[600 660 120 25]);
         uicontrol(LevelPanel(5),'style','text','string','Birthdate','fontsize',gui.fs,'position',[600 620 120 25]);
-        uicontrol(LevelPanel(5),'style','text','string','List','fontsize',gui.fs,'position',[600 580 120 25]);
         
         gui.txtExperimentID = uicontrol(LevelPanel(5),'style','text','fontsize',gui.fs,'position',[220 705 160 25]);%,'backgroundcolor','w');
         gui.txtSubjectID = uicontrol(LevelPanel(5),'style','edit','fontsize',gui.fs,'position',[220 665 160 25],'backgroundcolor','w');
@@ -534,7 +533,6 @@ function Experiment(SettingsFile)
         
         gui.txtGender = uicontrol(LevelPanel(5),'style','edit','fontsize',gui.fs,'position',[720 665 160 25],'backgroundcolor','w');
         gui.txtBirthdate = uicontrol(LevelPanel(5),'style','edit','fontsize',gui.fs,'position',[720 625 160 25],'backgroundcolor','w');
-        gui.txtList = uicontrol(LevelPanel(5),'style','edit','fontsize',gui.fs,'position',[720 585 160 25],'backgroundcolor','w');
         
         % Condition Table
         gui.tblCondition = uitable(LevelPanel(5),'fontsize',gui.fs,'position',[600 450 300 120],...
@@ -1440,7 +1438,6 @@ function Experiment(SettingsFile)
     
     S.Results.Gender = get(gui.txtGender,'string');
     S.Results.Birthdate = get(gui.txtBirthdate,'string');
-    S.Results.List = get(gui.txtList,'string');
     S.Results.Condition = get(gui.tblCondition,'data');
     
     S.Results.Trials = [];
@@ -1463,6 +1460,7 @@ function Experiment(SettingsFile)
     set(gui.txtGender,'string','');
     set(gui.txtBirthdate,'string','');
     set(gui.txtComments,'string','');
+    set(gui.tblCondition,'data',{'' ''});
     
   end
   
@@ -1610,7 +1608,9 @@ function Experiment(SettingsFile)
   function DeleteCondition(obj, evt)
     % Delete the selected row from the condition table
     condData = get(gui.tblCondition,'data');
-    condData(ConditionRow,:) = []; % Delete a row
+    try
+        condData(ConditionRow,:) = []; % Delete a row.  Do nothing if error.
+    end
     set(gui.tblCondition,'Data',condData);
   end
   

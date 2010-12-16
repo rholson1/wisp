@@ -971,9 +971,19 @@ function R = RunExperiment(S)
     % Position has format [x y w h], where x and y are measured from lower left corner of primary screen.
     figpos = [OLcoords(1) mp(1,4)-OLcoords(4)+1 OLcoords(3)-OLcoords(1)+1 OLcoords(4)-OLcoords(2)+1];
     
+    if iscell(S.Results.Condition)
+        if size(S.Results.Condition,1) > 0
+            ConditionToShow = S.Results.Condition{1,2};
+        else
+            ConditionToShow = '';
+        end
+    else
+        ConditionToShow = S.Results.Condition;
+    end
+    
     infoslidefig = figure('position',figpos,'menubar','none','Name','Information');
     uicontrol(infoslidefig,'style','text','units','normalized','position',[0 0.75 1 0.25],'string',S.Experiment.Name,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
-    uicontrol(infoslidefig,'style','text','units','normalized','position',[0 0.50 1 0.25],'string',S.Results.Condition,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+    uicontrol(infoslidefig,'style','text','units','normalized','position',[0 0.50 1 0.25],'string',ConditionToShow,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
     uicontrol(infoslidefig,'style','text','units','normalized','position',[0 0.25 1 0.25],'string',S.Results.SubjectID,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
     uicontrol(infoslidefig,'style','text','units','normalized','position',[0 0.00 1 0.25],'string',S.Results.DateTime,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
     
