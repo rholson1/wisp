@@ -72,6 +72,8 @@ function R = RunExperiment(S)
   gui.txtPhase = uicontrol(f,'style','text','fontsize',gui.fs,'fontweight','bold','position',[20 600 960 30]);
   gui.txtTrial = uicontrol(f,'style','text','fontsize',gui.fs,'fontweight','bold','position',[20 560 960 30]);
   gui.txtEvent = uicontrol(f,'style','text','fontsize',gui.fs,'fontweight','bold','position',[20 520 960 30]);
+  gui.txtCountdown = uicontrol(f,'style','text','fontsize',gui.fs,'fontweight','bold','position',[20 480 960 30]);
+  
   
   % Define some state variables to track stimulus and response records
   TrialNum = 0;
@@ -253,7 +255,18 @@ function R = RunExperiment(S)
     % -- Improved Random Event Handling --  END
     %-------------------------------------
     
-    %for tidx = 1:TrialCount
+    
+    % Initialize Countdown display
+    switch phase.PhaseEnd
+      case 'Fixed'
+        set(gui.txtCountdown,'string',[num2str(length(TrialSequence)) ' trials remaining in phase.'])
+      case 'Time'
+        set(gui.txtCountdown,'string',[num2str(phase.TimeLimit) ' seconds remaining in phase.'])
+      case 'Contingent'
+        % no countdown display
+    end
+    
+    
     tidx = 1;
     while tidx <= length(TrialSequence)
       REPEATING_TRIAL = BlockSequence(tidx)<=0 || BlockSequence(tidx)~=fix(BlockSequence(tidx));
@@ -318,7 +331,9 @@ function R = RunExperiment(S)
       % Check to see if phase end condition is satisfied.  If so, set flag_EndPhase to True.
       switch phase.PhaseEnd
         case 'Fixed'
-          % no action is required
+          % update trial countdown
+          set(gui.txtCountdown,'string',[num2str(length(TrialSequence)-tidx) ' trials remaining in phase.'])
+          
         case 'Time'
           % compare current time to start of phase
           % first identify the first trial in the current phase
@@ -444,6 +459,16 @@ function R = RunExperiment(S)
     while ~all(EventCompleted)
 
       pause(0.01)
+      
+      % If the phase end condition is Time, then update the phase countdown
+      phaseidx = find(strcmp(PhaseName,{S.Experiment.Phases.Name}),1);                    % Phase number
+      if strcmp(S.Experiment.Phases(phaseidx).PhaseEnd,'Time') 
+        trialidx = find(strcmp(PhaseName,{R.Trials.PhaseName}),1);                        % Trial number (in results)
+        phase_duration = etime(clock(),datevec(R.Trials(trialidx).StartTime));            % Time since phase began (seconds)
+        time_remaining = round(S.Experiment.Phases(phaseidx).TimeLimit - phase_duration); % Time left before limit is reached
+        set(gui.txtCountdown,'string',[num2str(time_remaining) ' seconds remaining in phase.']);
+      end
+      
       % make the "run" figure current so that it can capture keypresses
       figure(f)
       %drawnow % flush event queue (automatically handled by figure())
