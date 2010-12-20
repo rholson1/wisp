@@ -139,6 +139,8 @@ function Experiment(SettingsFile)
   % Results
   gui.menu.results = uimenu(f,'Label','Results');
   uimenu(gui.menu.results,'Label','Postprocess Results','callback',@Process_Results)
+  uimenu(gui.menu.results,'Label','Edit Results File','callback',@Edit_Results)
+  
   
   % Help
   gui.menu.help = uimenu(f,'Label','Help');
@@ -1469,7 +1471,13 @@ function Experiment(SettingsFile)
     % Call the Process Results GUI
     ProcessResultsGUI(S.Paths.ResultsPath);
   end
-  
+
+%% Edit_Results
+  function Edit_Results(obj, evt)
+    % Call the Edit Results GUI
+    EditResults(S.Paths.ResultsPath);
+  end
+
   %% Convert Images to BMP
   function ConvertToBMP(obj, events)
     % Get a list if image formats
