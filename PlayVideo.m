@@ -15,7 +15,8 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
   %
   % 2010-05-18 : Created by Robert H. Olson, Ph.D. rolson@waisman.wisc.edu
   % 2010-08-09 : Permit "simultaneous" display at more than one OL
-    
+  
+  
   numOL = length(OL); % number of output locations
   
   for OLidx = 1:numOL % iterate over output locations
@@ -50,7 +51,7 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
       ChannelString = [ChannelString ':0:' num2str(C.OL(OL(OLidx)).VideoAudioChannels(i)-1)];
     end
     mplayer{OLidx}.Channels = ChannelString;
-    mplayer{OLidx}.Filename = ['"' VideoFileName '"'];
+    mplayer{OLidx}.Filename = [' -noborder ' VideoFileName];  % insert -noborder into command line
     
     mplayer{OLidx}.PlayFile(); % Start playback using previous-defined settings
     
@@ -60,9 +61,6 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
     pause(0.005) % DEBUG
     if C.OL(OL(OLidx)).Fullscreen
       mplayer{OLidx}.Command('vo_fullscreen 1')
-      %disp(['Response to fullscreen: ' mplayer{OLidx}.Response])
-    else
-      mplayer{OLidx}.Command('set_property border 0')
     end
     
   end
