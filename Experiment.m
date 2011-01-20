@@ -550,11 +550,18 @@ function Experiment(SettingsFile)
         uicontrol(LevelPanel(5),'style','pushbutton','fontsize',gui.fs,'position',[760 420 140 25],...
           'string','Delete Condition','callback',@DeleteCondition);
         
-        
+        % Control display of information slide pre/post experiment
         gui.chkInfoSlide = uicontrol(LevelPanel(5),'style','checkbox','fontsize',gui.fs,'position',[600 280 160 25],...
           'string','Show Info Slides','callback',@chkInfoSlide_change);
         gui.cboInfoSlideOL = uicontrol(LevelPanel(5),'style','popupmenu','fontsize',gui.fs,'position',[760 280 120 25],'backgroundcolor','w',...
           'string','test','callback',@cboInfoSlideOL_change);
+        
+        % Control display of trial information during experiment
+        gui.chkTrialSlide = uicontrol(LevelPanel(5),'style','checkbox','fontsize',gui.fs,'position',[600 250 160 25],...
+          'string','Show Trial Information','callback',@chkTrialSlide_change);
+        gui.cboTrialSlideOL = uicontrol(LevelPanel(5),'style','popupmenu','fontsize',gui.fs,'position',[760 250 120 25],'backgroundcolor','w',...
+          'string','test','callback',@cboTrialSlideOL_change);
+        
         
         
         uicontrol(LevelPanel(5),'style','pushbutton','fontsize',gui.fs,'position',[390 625 40 25],...
@@ -747,6 +754,18 @@ function Experiment(SettingsFile)
         set(gui.chkInfoSlide,'value',S.Experiment.ShowInfoSlide);
         set(gui.cboInfoSlideOL,'string',{S.OL.OL.Name},'value',S.Experiment.InfoSlideOL);
         
+        % Trial Info OL
+        if ~isfield(S.Experiment,'ShowTrialSlide')
+          S.Experiment.ShowTrialSlide = 1;
+        end
+        if ~isfield(S.Experiment,'TrialSlideOL')
+          S.Experiment.TrialSlideOL = 1;
+        end
+        
+        set(gui.chkTrialSlide,'value',S.Experiment.ShowTrialSlide);
+        set(gui.cboTrialSlideOL,'string',{S.OL.OL.Name},'value',S.Experiment.TrialSlideOL);
+        
+        % Condition Table
         if ~isfield(S.Results,'Condition');
           S.Results.Condition = {'' ''};
         end
@@ -1592,6 +1611,16 @@ function Experiment(SettingsFile)
     S.Experiment.InfoSlideOL = get(obj,'value');
   end
   
+  %% chkTrialSlide_change
+  function chkTrialSlide_change(obj, evt)
+    S.Experiment.ShowTrialSlide = get(obj,'value');
+  end
+  
+  %% cboTrialSlideOL_change
+  function cboTrialSlideOL_change(obj, evt)
+    S.Experiment.TrialSlideOL = get(obj,'value');
+  end
+
   %% tblCondition_select
   function tblCondition_select(obj, evt)
     % Callback fires when the condition table selection changes

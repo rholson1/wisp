@@ -131,6 +131,7 @@ function R = RunExperiment(S)
   
   m = 0;
   if S.Experiment.ShowInfoSlide, ShowInfoSlide, end
+  if S.Experiment.ShowTrialSlide, gui.TrialInfo = ShowTrialSlide(true); end
   
   % --- Run each phase ---
   for m = 1:PhaseCount
@@ -141,6 +142,7 @@ function R = RunExperiment(S)
     end
   end
   
+  if S.Experiment.ShowTrialSlide, ShowTrialSlide(false), end
   if S.Experiment.ShowInfoSlide, ShowInfoSlide, end
   
   % it might be a good idea to present some summary information about the
@@ -164,6 +166,9 @@ function R = RunExperiment(S)
     PhaseName = phase.Name;
     PhaseTrialNum = 0; % Reset Phase Trial Number
     set(gui.txtPhase,'string',['Phase: ' PhaseName]);  % Display phase name
+    if S.Experiment.ShowTrialSlide
+      set(gui.TrialInfo.txtPhase,'string',['Phase: ' PhaseName]);
+    end    
     
     % Compute Nominal Trial Sequence
     
@@ -437,7 +442,9 @@ function R = RunExperiment(S)
     TrialNum = length(R.Trials) + 1;     % Overall trial number
     PhaseTrialNum = PhaseTrialNum + 1;   % Number of trial within phase
     set(gui.txtTrial,'string',['Trial ' num2str(PhaseTrialNum) ' : ' trial.Name]); % Display name of trial
-    
+    if S.Experiment.ShowTrialSlide
+      set(gui.TrialInfo.txtTrial,'string',['Trial ' num2str(PhaseTrialNum)]);
+    end    
     
     R.Trials(TrialNum).PhaseName = PhaseName; % Set in RunPhase
     R.Trials(TrialNum).ItemName = trial.Name;
@@ -1016,6 +1023,40 @@ function R = RunExperiment(S)
     pause(2)
     delete(infoslidefig);
   end
+
+
+  %% Control display of trial information slide
+  function TrialInfo = ShowTrialSlide(displaySlide)
+    if displaySlide
+      % Create Trial Information figure
+
+      % Determine the coordinates of the figure from the OL
+      OLcoords = S.OL.OL(S.Experiment.TrialSlideOL).DisplayCoords;
+      
+      mp = get(0,'monitorposition'); % Get position of monitors
+      
+      % If fullscreen, get the coordinates of the screen
+      if S.OL.OL(S.Experiment.TrialSlideOL).Fullscreen
+        mpidx = mp(:,1)<=OLcoords(1) & mp(:,2)<=OLcoords(2) & mp(:,3)>=OLcoords(3) & mp(:,4)>=OLcoords(4);
+        OLcoords = mp(mpidx,:);
+      end
+      
+      % OLcoords have format [x1 y1 x2 y2] measured from upper left corner of primary screen.
+      % Position has format [x y w h], where x and y are measured from lower left corner of primary screen.
+      figpos = [OLcoords(1) mp(1,4)-OLcoords(4)+1 OLcoords(3)-OLcoords(1)+1 OLcoords(4)-OLcoords(2)+1];
+
+      TrialInfo.f = figure('position',figpos,'menubar','none','Name','Trial Information');
+      
+      uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.75 1 0.25],'string',S.Experiment.Name,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+      uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.50 1 0.25],'string',S.Results.SubjectID,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+      TrialInfo.txtPhase = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.25 1 0.25],'string','Phase Name','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+      TrialInfo.txtTrial = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.00 1 0.25],'string','Subject ID','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+    else
+      % Delete Trial Information figure
+      delete(gui.TrialInfo.f)
+    end
+  end
+    
 end % RunExperiment
 
 %% INS - insert a vector into another vector at a specified position
