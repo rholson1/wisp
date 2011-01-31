@@ -767,7 +767,7 @@ function Experiment(SettingsFile)
         
         % Condition Table
         if ~isfield(S.Results,'Condition');
-          S.Results.Condition = {'' ''};
+          S.Results.Condition = {'Familiarization' ''};
         end
         set(gui.tblCondition,'Data',S.Results.Condition);
     end
@@ -1481,7 +1481,7 @@ function Experiment(SettingsFile)
     set(gui.txtGender,'string','');
     set(gui.txtBirthdate,'string','');
     set(gui.txtComments,'string','');
-    set(gui.tblCondition,'data',{'' ''});
+    set(gui.tblCondition,'data',{'Familiarization' ''});
     
   end
   

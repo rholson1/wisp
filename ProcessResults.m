@@ -271,8 +271,16 @@ function [headers, data, datafmt] = createOutput_headturn(S)
   % Column 14: Comments
   % Column 15-: Condition(s)
   
+  % Updates: 1/31/2011
+  % Number trials within phase
+  % Add column for block number (also numbered within phase?)
+  
   % Compute age at testing (in days) outside of the trial loop for efficiency
-  AgeInDays = fix(datenum(S.Results.DateTime) - datenum(S.Results.Birthdate));
+  if isempty(S.Results.Birthdate) || isempty(S.Results.DateTime)
+    AgeInDays = 0;
+  else
+    AgeInDays = fix(datenum(S.Results.DateTime) - datenum(S.Results.Birthdate));
+  end
   
   % Put conditions in a standard format {'Cond. Name 1' 'Condition 1';...}
   if ~iscell(S.Results.Condition)
@@ -280,55 +288,60 @@ function [headers, data, datafmt] = createOutput_headturn(S)
   end
   ConditionCount = size(S.Results.Condition,1); % Number of rows in condition cell array
   
-  headers = sprintf(['Trial\tPhase\tItem\tLocation\tLooking Time (ms)\tLooks Away\tPreLook (ms)\tPostLook (ms)' ...
+  headers = sprintf(['Trial\tPhase\tItem\tLocation\tBlock\tLooking Time (ms)\tLooks Away\tPreLook (ms)\tPostLook (ms)' ...
       '\tProtocol\tSubject ID\tTester\tGender\tAge (days)\tComments' sprintf('\\t%s',S.Results.Condition{:,1})]);
  
-  datafmt = [repmat('%d\t',1,8) repmat('%s\t',1,4) '%d\t' repmat('%s\t',1,1+ConditionCount) '\n'];
+  datafmt = [repmat('%d\t',1,9) repmat('%s\t',1,4) '%d\t' repmat('%s\t',1,1+ConditionCount) '\n'];
   
   nt = length(S.Results.Trials); % Number of trials
   
-  data = cell(nt,14+ConditionCount); % Initialize data cell array
+  data = cell(nt,15+ConditionCount); % Initialize data cell array
   
   % Loop over trials, completing one row in data array per trial
   for t = 1:nt
     PhaseNumber = find(strcmp(S.Results.Trials(t).PhaseName,{S.Experiment.Phases.Name}),1);
     ItemNumber = find(strcmp(S.Results.Trials(t).ItemName,{S.Experiment.Phases(PhaseNumber).Items.Name}),1);
     
-    data{t,1} = t;
+    %data{t,1} = t;
     data{t,2} = PhaseNumber;
+    data{t,1} = nnz(PhaseNumber == [data{1:t,2}]); % Number trials within each phase
     data{t,3} = ItemNumber; 
+    
+    ItemsInPhase = length(S.Experiment.Phases(PhaseNumber).Items);
+    data{t,5} = ceil(data{t,1}/ItemsInPhase);   % Compute block based on number of items in phase
+    
     if length(S.Results.Trials(t).Events) > 1
       data{t,4} = S.Results.Trials(t).Events(2).Location; % The second event is the right or left light, by convention
     else
       continue
     end
-
+    
     correct_responses = logical([S.Results.Trials(t).Responses.Correct]);
     
     if any(correct_responses)
-      data{t,5} = fix(sum([S.Results.Trials(t).Responses(correct_responses).Duration])*1000); % Sum, convert from s to ms  
-      data{t,6} = max(nnz(correct_responses)-1, 0); % Number of breaks between correct responses (at least 0)
+      data{t,6} = fix(sum([S.Results.Trials(t).Responses(correct_responses).Duration])*1000); % Sum, convert from s to ms  
+      data{t,7} = max(nnz(correct_responses)-1, 0); % Number of breaks between correct responses (at least 0)
       
       % Time between end of first event and start of first correct keypress
       firsteventend = S.Results.Trials(t).Events(1).EndTime;
       firstcorrect = S.Results.Trials(t).Responses(find(correct_responses,1)).PressTime;
-      data{t,7} = fix(etime(datevec(firstcorrect),datevec(firsteventend)) * 1000);
+      data{t,8} = fix(etime(datevec(firstcorrect),datevec(firsteventend)) * 1000);
       
       % Time between first correct keypress and end of second event
       secondeventend = S.Results.Trials(t).Events(2).EndTime;
-      data{t,8} = fix(etime(datevec(secondeventend),datevec(firstcorrect)) * 1000);
+      data{t,9} = fix(etime(datevec(secondeventend),datevec(firstcorrect)) * 1000);
     else
-      data(t,5:8) = {0 0 0 0}; % If no correct responses, set everything to 0
+      data(t,6:9) = {0 0 0 0}; % If no correct responses, set everything to 0
     end
     
-    data{t,9} = S.Experiment.Name;
-    data{t,10} = S.Results.SubjectID;
-    data{t,11} = S.Results.Tester;
-    data{t,12} = S.Results.Gender;
-    data{t,13} = AgeInDays;
-    data{t,14} = S.Results.Comments'; 
+    data{t,10} = S.Experiment.Name;
+    data{t,11} = S.Results.SubjectID;
+    data{t,12} = S.Results.Tester;
+    data{t,13} = S.Results.Gender;
+    data{t,14} = AgeInDays;
+    data{t,15} = S.Results.Comments'; 
     
-    data(t,15:14+ConditionCount) = S.Results.Condition(:,2)';
+    data(t,16:15+ConditionCount) = S.Results.Condition(:,2)';
   end
 
   data = data';
