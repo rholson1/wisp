@@ -441,7 +441,8 @@ function R = RunExperiment(S)
     % Init new trial
     TrialNum = length(R.Trials) + 1;     % Overall trial number
     PhaseTrialNum = PhaseTrialNum + 1;   % Number of trial within phase
-    set(gui.txtTrial,'string',['Trial ' num2str(PhaseTrialNum) ' : ' trial.Name]); % Display name of trial
+    %set(gui.txtTrial,'string',['Trial ' num2str(PhaseTrialNum) ' : ' trial.Name]); % Display name of trial
+    set(gui.txtTrial,'string',['Trial ' num2str(PhaseTrialNum)]); % Display number of trial
     if S.Experiment.ShowTrialSlide
       set(gui.TrialInfo.txtTrial,'string',['Trial ' num2str(PhaseTrialNum)]);
     end    
