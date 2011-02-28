@@ -445,6 +445,7 @@ function R = RunExperiment(S)
     set(gui.txtTrial,'string',['Trial ' num2str(PhaseTrialNum)]); % Display number of trial
     if S.Experiment.ShowTrialSlide
       set(gui.TrialInfo.txtTrial,'string',['Trial ' num2str(PhaseTrialNum)]);
+      set(gui.TrialInfo.txtSoundOn,'string',''); % reset at beginning of trial
     end    
     
     R.Trials(TrialNum).PhaseName = PhaseName; % Set in RunPhase
@@ -567,6 +568,7 @@ function R = RunExperiment(S)
           % Test filename to see if audio (.wav) or video file
           if regexpi(trial.Events(i).StimulusFilename,'\.wav') % If filename ends in .wav ...
             % Audio
+            set(gui.TrialInfo.txtSoundOn,'string','Sound On');
             if S.OL.UsePsychPortAudio
               StopFcns{i} = PlayAudio(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata);
             else
@@ -1048,10 +1050,12 @@ function R = RunExperiment(S)
 
       TrialInfo.f = figure('position',figpos,'menubar','none','Name','Trial Information');
       
-      uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.75 1 0.25],'string',S.Experiment.Name,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
-      uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.50 1 0.25],'string',S.Results.SubjectID,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
-      TrialInfo.txtPhase = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.25 1 0.25],'string','Phase Name','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
-      TrialInfo.txtTrial = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.00 1 0.25],'string','Subject ID','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+      uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.80 1 0.20],'string',S.Experiment.Name,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+      uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.60 1 0.20],'string',S.Results.SubjectID,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+      TrialInfo.txtPhase = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.40 1 0.20],'string','Phase Name','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+      TrialInfo.txtTrial = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.20 1 0.20],'string','Subject ID','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+      TrialInfo.txtSoundOn = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.00 1 0.20],'string','Sound Onn','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+      
     else
       % Delete Trial Information figure
       delete(gui.TrialInfo.f)
