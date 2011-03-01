@@ -568,7 +568,7 @@ function R = RunExperiment(S)
           % Test filename to see if audio (.wav) or video file
           if regexpi(trial.Events(i).StimulusFilename,'\.wav') % If filename ends in .wav ...
             % Audio
-            set(gui.TrialInfo.txtSoundOn,'string','Sound On');
+            if S.Experiment.ShowTrialSlide, set(gui.TrialInfo.txtSoundOn,'string','Sound On'); end
             if S.OL.UsePsychPortAudio
               StopFcns{i} = PlayAudio(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata);
             else
