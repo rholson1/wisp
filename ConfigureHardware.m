@@ -493,11 +493,11 @@ uiwait(f); % Do not leave function until figure closes.
       ChannelString = [ChannelString ':0:' num2str(C.OL(workingOL).VideoAudioChannels(i)-1)];
     end
     mplayer.Channels = ChannelString;
-    mplayer.Filename = fullfile(fileparts(mfilename('fullpath')), 'samples', 'a11v_1101342.mpg');
+    mplayer.Filename = [' -noborder ' fullfile(fileparts(mfilename('fullpath')), 'samples', 'a11v_1101342.mpg')];
 
     mplayer.PlayFile(); % Start playback using previous-defined settings
     pause(0.5)
-    mplayer.Command('set_property border 0')
+    %mplayer.Command('set_property border 0')
     
     if C.OL(workingOL).Fullscreen
       mplayer.Command('vo_fullscreen 1')
