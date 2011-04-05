@@ -51,7 +51,7 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
       ChannelString = [ChannelString ':0:' num2str(C.OL(OL(OLidx)).VideoAudioChannels(i)-1)];
     end
     mplayer{OLidx}.Channels = ChannelString;
-    mplayer{OLidx}.Filename = [' -noborder ' VideoFileName];  % insert -noborder into command line
+    mplayer{OLidx}.Filename = [' -noborder "' VideoFileName '"'];  % insert -noborder into command line
     
     mplayer{OLidx}.PlayFile(); % Start playback using previous-defined settings
     
