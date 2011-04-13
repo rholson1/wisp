@@ -243,7 +243,7 @@ uiwait(f); % Do not leave function until figure closes.
     set(h.txtName,'string',C.OL(workingOL).Name);
     set(h.txtKey,'string',C.OL(workingOL).Key);
     
-    if isempty(C.OL(workingOL).AudioDevice)
+    if isempty(C.OL(workingOL).AudioDevice) || ~any(AudioOut==C.OL(workingOL).AudioDevice)
       C.OL(workingOL).AudioDevice = AudioOut(1);
     end
     set(h.cboAudio,'value',find(AudioOut==C.OL(workingOL).AudioDevice,1));
