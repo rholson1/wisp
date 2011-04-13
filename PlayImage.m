@@ -35,6 +35,7 @@ function stopfcn = PlayImage(C,OL,ImageFileName, Callback, CallbackArg)
   for OLidx = 1:length(OL)
     % Must convert OL to a display number
     c = C.OL(OL(OLidx)).DisplayCoords;
+    c(3:4) = c(3:4)-c(1:2)+[1 1];
     
     screen_num = find(c(1)<=mp(:,3)&c(1)>=mp(:,1)&c(2)<=mp(:,4)&c(2)>=mp(:,2));
     if isempty(screen_num)
