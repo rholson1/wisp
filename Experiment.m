@@ -1466,14 +1466,37 @@ function Experiment(SettingsFile)
     % Run the experiment and store the results
     S.Results = RunExperiment(S);
     
-    fname = fullfile(S.Paths.ResultsPath,[datestr(S.Results.DateTime,'yyyy-mm-dd-HHMM') ...
-      '_' S.Experiment.Name '_' S.Results.SubjectID '.txt']);
+    basefname = [datestr(S.Results.DateTime,'yyyy-mm-dd-HHMM') ...
+      '_' S.Experiment.Name '_' S.Results.SubjectID '.txt'];
+    
+    fname = fullfile(S.Paths.ResultsPath,basefname);
     
     % Write experiment results to disk
     ss = gencode(S);
-    fid = fopen(fname,'w');
-    fprintf(fid,'%s\n',ss{:});
-    fclose(fid);
+    
+    while 1
+      try
+        fid = fopen(fname,'w');
+        fprintf(fid,'%s\n',ss{:});
+        fclose(fid);
+        break % write succeeded, so break out of while loop
+      catch ME
+        warning(ME.message)
+        % Failed to write file; prompt for new filename/path
+        [temp_f,temp_p] = uiputfile({'*.*','All Files (*.*)'},'Write failed.  Select a new save data location.',basefname);
+        if ~isequal(temp_f,0)
+          fname = fullfile(temp_p,temp_f);
+        else
+          % write to a temporary file and alert user.
+          fname = tempname; % Generate a temporary filename
+          fid = fopen(fname,'w');
+          fprintf(fid,'%s\n',ss{:});
+          fclose(fid);
+          warndlg(['Results saved to ' fname],'Problem saving results')
+          break
+        end
+      end
+    end
     
     % Reset fields for next subject
     set(gui.txtSubjectID,'string','');
