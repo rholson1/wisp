@@ -23,6 +23,7 @@ C = []; % Create variable
 if nargin == 0
   C.NumOL = 2;
   C.UsePsychPortAudio = 0;
+  C.ImageDisplayMode = 1;
   C.OL(1).Name = 'Left';
   C.OL(2).Name = 'Right';
   C.OL(1).Key = '4';
@@ -39,6 +40,7 @@ if nargin == 0
   C.OL(1).VideoAudioChannels = [1 2];    % Audio channels used for videos
 else
   C = C_init;
+  if ~isfield(C,'ImageDisplayMode'), C.ImageDisplayMode = 1; end
 end
 
 %% Global Variables
@@ -115,8 +117,8 @@ f = figure('Name', 'Output Locations', ...
   'Resize', 'off', ...
   'MenuBar','none', ...
   'Color',get(0,'defaultUIcontrolBackgroundColor'), ...
-  'Position',[xy 540 600],...
-  'WindowStyle','modal');
+  'Position',[xy 540 600]);%,...
+  %'WindowStyle','modal');
 
 
 m = get(0,'MonitorPosition');
@@ -213,6 +215,12 @@ h.chkUsePsychPortAudio = uicontrol(f,'style','checkbox','fontsize',h.fs, ...
   'string','Use PsychPortAudio','position',[20 70 200 25], ...
   'value',C.UsePsychPortAudio,'callback',@chkUsePsychPortAudio_change);
 
+% Image Display Mode
+uicontrol('style','text','fontsize',h.fs,'string','Image Display Mode',...
+  'position',[270 65 140 25]);
+h.cboImageDisplayMode = uicontrol(f,'style','popupmenu','string',{'center' 'fit' 'stretch'}, ...
+  'position',[410 70 100 25], 'backgroundcolor', 'w', 'fontsize', h.fs, ...
+  'value',C.ImageDisplayMode,'callback',@cboImageDisplayMode_change);
 
 % Test Buttons
 uicontrol(f,'style','pushbutton','fontsize',h.fs, ...
@@ -221,7 +229,9 @@ uicontrol(f,'style','pushbutton','fontsize',h.fs, ...
 uicontrol(f,'style','pushbutton','fontsize',h.fs, ...
   'string','Test Video','position',[190 20 150 30], ...
   'callback',@test_video);
-
+uicontrol(f,'style','pushbutton','fontsize',h.fs, ...
+  'string','Test Image','position',[360 20 150 30], ...
+  'callback',@test_image);
 
 
 refreshOL(); % Update OL fields
@@ -414,7 +424,14 @@ uiwait(f); % Do not leave function until figure closes.
   end
 
 %-------------------------------------------------------------------------
-% Preview Audio Output 
+% Callback for Image Display Mode Combobox
+%-------------------------------------------------------------------------
+  function cboImageDisplayMode_change(obj, events)
+    C.ImageDisplayMode = get(obj,'value');    
+  end
+
+%-------------------------------------------------------------------------
+% Test Audio Output 
 %-------------------------------------------------------------------------
   function test_audio(obj, events)
     if C.UsePsychPortAudio
@@ -467,7 +484,7 @@ uiwait(f); % Do not leave function until figure closes.
   end
 
 %-------------------------------------------------------------------------
-% Preview Video 
+% Test Video Output
 %-------------------------------------------------------------------------
   function test_video(obj, events)
     %BorderWidth = 3;
@@ -508,7 +525,16 @@ uiwait(f); % Do not leave function until figure closes.
     
     
   end
-  
+
+%-------------------------------------------------------------------------
+% Test Image Display
+%-------------------------------------------------------------------------
+  function test_image(obj, events)
+    TestImageFile = fullfile(fileparts(mfilename('fullpath')), 'samples', 'sample.jpg');
+    stopImage = PlayImage(C,workingOL,TestImageFile);
+    pause(3)
+    stopImage();
+  end
 %-------------------------------------------------------------------------
 %  UsePsychPortAudio checkbox callback
 %-------------------------------------------------------------------------

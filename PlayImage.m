@@ -32,6 +32,9 @@ function stopfcn = PlayImage(C,OL,ImageFileName, Callback, CallbackArg)
   
   mp = get(0,'MonitorPosition'); % Get monitor positions (necessary to relate OL position to screen ID
   
+  % Check to see if ImageDisplayMode has been set.  If not, use default.
+  if ~isfield(C,'ImageDisplayMode'), C.ImageDisplayMode=1; end
+  
   for OLidx = 1:length(OL)
     % Must convert OL to a display number
     c = C.OL(OL(OLidx)).DisplayCoords;
@@ -92,22 +95,15 @@ function stopfcn = PlayImage(C,OL,ImageFileName, Callback, CallbackArg)
       fj_idx = length(frame_java) + 1;
     end
     
-    
     ge = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment();
     gds = ge.getScreenDevices();
-    height = gds(device_number).getDisplayMode().getHeight();
-    width = gds(device_number).getDisplayMode().getWidth();
+    screenheight = gds(device_number).getDisplayMode().getHeight();
+    screenwidth = gds(device_number).getDisplayMode().getWidth();
     
     if ISBMP
       bmpfilename = image;
     else
       bmpfilename = [tempdir 'display.bmp'];
-      
-      if ~isequal(size(image,1),height)
-        warning(['Image must have vertical resolution of ' num2str(height)]);
-      elseif ~isequal(size(image,2),width)
-        warning(['Image must have horizontal resolution of ' num2str(width)]);
-      end
       
       try
         imwrite(image,bmpfilename);
@@ -118,38 +114,64 @@ function stopfcn = PlayImage(C,OL,ImageFileName, Callback, CallbackArg)
     
     buff_image = javax.imageio.ImageIO.read(java.io.File(bmpfilename));
     
-    %   global frame_java;
-    %   global icon_java;
-    %   global device_number_java;
-    %
-    %   if ~isequal(device_number_java, device_number)
-    %     try frame_java.dispose(); end
-    %     frame_java = [];
-    %     device_number_java = device_number;
-    %   end
+    old_w = buff_image.getWidth();
+    old_h = buff_image.getHeight();
     
+
     if ~isequal(class(frame_java), 'javax.swing.JFrame')
       frame_java{fj_idx} = javax.swing.JFrame(gds(device_number).getDefaultConfiguration());
-      bounds = frame_java{fj_idx}.getBounds();
       frame_java{fj_idx}.setUndecorated(true);
-      icon_java = javax.swing.ImageIcon(buff_image);
+
+      % Compute new width/height for scaling transformation
+      if isfullscreen
+        new_w = screenwidth;
+        new_h = screenheight;
+      else
+        new_w = pos(3);
+        new_h = pos(4);
+      end
+
+      % Determine scale factors based on Image Display Mode
+      switch C.ImageDisplayMode
+        case 1 % Center
+          w_scale = 1;
+          h_scale = 1;
+        case 2 % Fit
+          w_scale = min(new_w/old_w, new_h/old_h);
+          h_scale = w_scale;
+        case 3 % Stretch
+          w_scale = new_w/old_w;
+          h_scale = new_h/old_h;
+      end
+      
+      % Compute translation to center image (for Center and Fit modes)
+      tx = (new_w - w_scale * old_w)/2;
+      ty = (new_h - h_scale * old_h)/2;
+
+      % Create affine transformation
+      affineTrans = java.awt.geom.AffineTransform();
+      affineTrans.translate(tx, ty);
+      affineTrans.scale(w_scale, h_scale);
+      
+      % Transform image
+      scaleOp = java.awt.image.AffineTransformOp(affineTrans,java.awt.image.AffineTransformOp.TYPE_BILINEAR);
+      sized_image = java.awt.image.BufferedImage(new_w,new_h,buff_image.getType());
+      sized_image = scaleOp.filter(buff_image, sized_image);
+      
+      % Put image in frame
+      icon_java = javax.swing.ImageIcon(sized_image);
       label = javax.swing.JLabel(icon_java);
       frame_java{fj_idx}.getContentPane.add(label);
+      
+      % Size frame to OL
       if isfullscreen
-        frame_java{fj_idx}.pack
         gds(device_number).setFullScreenWindow(frame_java{fj_idx});
-        frame_java{fj_idx}.setLocation( bounds.x, bounds.y );
       else
-        frame_java{fj_idx}.pack
-        frame_java{fj_idx}.setLocation( pos(1), pos(2) );
         frame_java{fj_idx}.setBounds( pos(1), pos(2), pos(3), pos(4) );
-        disp(pos')
       end
     else
       frame_java{fj_idx}.pack
-      %icon_java.setImage(buff_image);
     end
-
     
     frame_java{fj_idx}.repaint
     %frame_java{fj_idx}.show
