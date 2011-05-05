@@ -371,7 +371,7 @@ function R = RunExperiment(S)
             % Compute expressions A and B (in a loop to avoid repeating code)
             phaseMeasureAB = [phase.MeasureA phase.MeasureB];
             phaseGroupAB = [phase.GroupA phase.GroupB];
-            nAB = [nA nB];
+            nAB = [phase.nA phase.nB];
             MeasureAB = zeros(1,2);
             
             for zz = 1:2
@@ -895,6 +895,10 @@ function R = RunExperiment(S)
           KeyData(2,4) = true;  % virtual "incorrect" key is pressed
           
         end
+      else
+        % Non-OL keys should be coded as incorrect to avoid breaking
+        % "Contingent" phase end condition code.
+        R.Trials(TrialNum).Responses(ResponseNum).Correct = 0;
       end
       
     end
