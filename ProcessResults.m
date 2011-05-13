@@ -316,6 +316,10 @@ function [headers, data, datafmt] = createOutput_headturn(S)
       continue
     end
     
+    if ~isfield(S.Results.Trials(t).Responses,'Correct')
+      S.Results.Trials(t).Responses.Correct = 0;
+    end
+    
     correct_responses = logical([S.Results.Trials(t).Responses.Correct]);
     
     if any(correct_responses)
