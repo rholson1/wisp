@@ -119,8 +119,9 @@ function stopfcn = PlayImage(C,OL,ImageFileName, Callback, CallbackArg)
     
 
     if ~isequal(class(frame_java), 'javax.swing.JFrame')
-      frame_java{fj_idx} = javax.swing.JFrame(gds(device_number).getDefaultConfiguration());
-      frame_java{fj_idx}.setUndecorated(true);
+      frame_java{fj_idx} = javax.swing.JWindow(gds(device_number).getDefaultConfiguration());
+      %frame_java{fj_idx} = javax.swing.JFrame(gds(device_number).getDefaultConfiguration());
+      %frame_java{fj_idx}.setUndecorated(true);
 
       % Compute new width/height for scaling transformation
       if isfullscreen
