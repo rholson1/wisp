@@ -118,10 +118,15 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
     end
     
     % Send a stop command to MPlayer (?)
-    for OLidx2 = 1:numOL
-      mplayer{OLidx2}.Command('stop')
-      mplayer{OLidx2}.Command('quit')
-      mplayer{OLidx2}.release
+    try
+      for OLidx2 = 1:numOL
+        mplayer{OLidx2}.Command('stop')
+        mplayer{OLidx2}.Command('quit')
+        mplayer{OLidx2}.release
+      end
+    catch ME
+      disp(' *** Problem Stopping Video in PlayVideo>StopVideo ***')
+      disp([' --- ' ME.message])
     end
     % Run the user-supplied callback function
     Callback(CallbackArg)
