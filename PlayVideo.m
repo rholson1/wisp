@@ -107,9 +107,14 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
   
   % Callback for timer object which fires at the end of the video.
   function StopVideo(obj, events)
-    if length(t) > 1
-      stop(t{2})
-      delete(t{2})
+    try
+      if length(t) > 1
+        stop(t{2})
+        delete(t{2})
+      end
+    catch ME
+      disp(' *** Problem Deleting Timer in PlayVideo>StopVideo ***')
+      disp([' --- ' ME.message])
     end
     
     % Send a stop command to MPlayer (?)
