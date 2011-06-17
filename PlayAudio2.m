@@ -94,16 +94,27 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
   
   % Callback for timer object which fires at the end of the video.
   function StopVideo(obj, events)
-    if length(t) > 1
-      stop(t{2})
-      delete(t{2})
+    try
+      if length(t) > 1
+        stop(t{2})
+        delete(t{2})
+      end
+    catch ME
+      disp(' --- Problem stopping timer (PlayAudio2)')
+      disp(ME.message)
     end
     
+    
     % Send a stop command to MPlayer (?)
-    for OLidx2 = 1:numOL
-      mplayer{OLidx2}.Command('stop')
-      mplayer{OLidx2}.Command('quit')
-      mplayer{OLidx2}.release
+    try
+      for OLidx2 = 1:numOL
+        mplayer{OLidx2}.Command('stop')
+        mplayer{OLidx2}.Command('quit')
+        mplayer{OLidx2}.release
+      end
+    catch ME
+      disp(' --- Problem stopping mplayer (PlayAudio2)')
+      disp(ME.message)
     end
     % Run the user-supplied callback function
     Callback(CallbackArg)
