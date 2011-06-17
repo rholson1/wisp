@@ -15,8 +15,6 @@ function R = RunExperiment(S)
   % Define name of diagnostic logfile (written to results directory)
   logfile = fullfile(S.Paths.ResultsPath,[datestr(now(),'yyyy-mm-dd_HHMM') '.log']);
   
-  diary(logfile)
-  
   % The results structure has fields:
   %  .SubjectID
   %  .BlockID
