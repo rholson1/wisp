@@ -18,6 +18,10 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
   
   
   numOL = length(OL); % number of output locations
+  if numOL == 0
+    disp('*** PlayVideo: No output locations defined')
+    return
+  end
   
   for OLidx = 1:numOL % iterate over output locations
     
@@ -32,8 +36,6 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
       return
     end
     
-    % Fire a callback at the end of the movie?
-    USECALLBACK = (nargin == 5);
     
     c = C.OL(OL(OLidx)).DisplayCoords;
     c(3:4) = c(3:4)-c(1:2)+[1 1];
@@ -65,6 +67,8 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
     
   end
   
+  % Fire a callback at the end of the movie?
+  USECALLBACK = (nargin == 5);
   if USECALLBACK
     % Reqest the movie length (last OL only)
     mplayer{numOL}.Command('pausing_keep get_time_length')

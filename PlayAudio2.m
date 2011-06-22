@@ -19,6 +19,10 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
   
   
   numOL = length(OL); % number of output locations
+  if numOL == 0
+    disp('*** PlayAudio2: No output locations defined')
+    return
+  end
   
   for OLidx = 1:numOL % iterate over output locations
     
@@ -33,8 +37,6 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
       return
     end
     
-    % Fire a callback at the end of the movie?
-    USECALLBACK = (nargin == 5);
 
     mplayer{OLidx}.Device = C.OL(OL(OLidx)).VideoAudioDevice - 1;
     
@@ -52,6 +54,8 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
 
   end
   
+  % Fire a callback at the end of the movie?
+  USECALLBACK = (nargin == 5);
   if USECALLBACK
     % Reqest the movie length (last OL only)
     mplayer{numOL}.Command('pausing_keep get_time_length')
