@@ -65,9 +65,10 @@ end
 
 % Try to start MPlayerControl
 try
-  mplayer = actxserver('MPlayerControl.MPlayerControl');
+  %mplayer = actxserver('MPlayerControl.MPlayerControl');
+  mplayer = MPlayerControl.MPlayerControl;
   mplayer.Executable = GetMPlayerExecutable();
-  VideoAudioDeviceList = regexp(mplayer.DeviceList,'\|','split');
+  VideoAudioDeviceList = regexp(mplayer.DeviceList.char,'\|','split');
 catch e
   errordlg(['Problem starting MPlayerControl.  Make sure that MPlayerControl has been installed.' e.message], ...
     'MPlayerControl Error');

@@ -103,6 +103,15 @@ function Experiment(SettingsFile)
     LoadSettings(); % Load from SettingsFile
   end
   
+  % Load MPlayerControl as a private .NET assembly
+  try
+    mpcfile = fullfile(fileparts(mfilename('fullpath')),'mpc','MPlayerControl.exe');
+    NET.addAssembly(mpcfile);
+  catch ME
+    disp(['Problem adding MPlayerControl assembly. ' ME.message])
+  end
+    
+  
   %% Create GUI Figure
   f = figure('MenuBar', 'None',  ...
     'Name', G.ProgramName, ...

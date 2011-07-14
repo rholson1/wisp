@@ -28,7 +28,8 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
     
     % Try to start MPlayerControl
     try
-      mplayer{OLidx} = actxserver('MPlayerControl.MPlayerControl');
+      %mplayer{OLidx} = actxserver('MPlayerControl.MPlayerControl');
+      mplayer{OLidx} = MPlayerControl.MPlayerControl;
       mplayer{OLidx}.Executable = GetMPlayerExecutable();
       %VideoAudioDeviceList = regexp(mplayer.DeviceList,'\|','split');
     catch e
@@ -74,17 +75,17 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
     stop(t{1})
     delete(t{1})
 
-    if ~ishandle(mplayer{numOL}) % the video has already been stopped
+    if ~isvalid(mplayer{numOL}) % the video has already been stopped
       return
     end
     
-    TimerPeriod = str2double(regexp(mplayer{numOL}.Response,'(?<==)\S*','match')) - toc(TimerStart);
+    TimerPeriod = str2double(regexp(mplayer{numOL}.Response.char,'(?<==)\S*','match')) - toc(TimerStart);
 
     if isempty(TimerPeriod) || isnan(TimerPeriod)
       disp('Problem getting length of movie.')
-      disp(['MPlayer.Response = ' mplayer{numOL}.Response])
+      disp(['MPlayer.Response = ' mplayer{numOL}.Response.char])
       pause(1)
-      disp(['MPlayer.Response after 1 sec delay = ' mplayer{numOL}.Response])
+      disp(['MPlayer.Response after 1 sec delay = ' mplayer{numOL}.Response.char])
       return
     end
 
@@ -114,7 +115,7 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
       for OLidx2 = 1:numOL
         mplayer{OLidx2}.Command('stop')
         mplayer{OLidx2}.Command('quit')
-        mplayer{OLidx2}.release
+        mplayer{OLidx2}.delete
       end
     catch ME
       disp(' --- Problem stopping mplayer (PlayAudio2)')
