@@ -526,6 +526,10 @@ function R = RunExperiment(S)
           
           logwrite(['Starting Event ' trial.Events(i).Name])
           
+          if S.Experiment.ShowTrialSlide && S.Experiment.TrialSlideEvents
+            set(gui.TrialInfo.txtTrial,'string',['Trial ' num2str(PhaseTrialNum) ' :: ' trial.Events(i).Name]);
+          end
+          
           % Determine OL
           switch trial.Events(i).OutputLocationType
             case 1 % All selected
@@ -1058,7 +1062,7 @@ function R = RunExperiment(S)
       uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.60 1 0.20],'string',S.Results.SubjectID,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
       TrialInfo.txtPhase = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.40 1 0.20],'string','Phase Name','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
       TrialInfo.txtTrial = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.20 1 0.20],'string','Subject ID','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
-      TrialInfo.txtSoundOn = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.00 1 0.20],'string','Sound Onn','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+      TrialInfo.txtSoundOn = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.00 1 0.20],'string','Sound On','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
       
     else
       % Delete Trial Information figure

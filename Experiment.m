@@ -570,7 +570,8 @@ function Experiment(SettingsFile)
           'string','Show Trial Information','callback',@chkTrialSlide_change);
         gui.cboTrialSlideOL = uicontrol(LevelPanel(5),'style','popupmenu','fontsize',gui.fs,'position',[760 250 120 25],'backgroundcolor','w',...
           'string','test','callback',@cboTrialSlideOL_change);
-        
+        gui.chkTrialSlideEvents = uicontrol(LevelPanel(5),'style','checkbox','fontsize',gui.fs,'position',[890 250 80 25],...
+          'string','events','callback',@chkTrialSlideEvents_change);
         
         
         uicontrol(LevelPanel(5),'style','pushbutton','fontsize',gui.fs,'position',[390 625 40 25],...
@@ -769,6 +770,9 @@ function Experiment(SettingsFile)
         end
         if ~isfield(S.Experiment,'TrialSlideOL')
           S.Experiment.TrialSlideOL = 1;
+        end
+        if ~isfield(S.Experiment,'TrialSlideEvents')
+          S.Experiment.TrialSlideEvents = 0;
         end
         
         set(gui.chkTrialSlide,'value',S.Experiment.ShowTrialSlide);
@@ -1651,6 +1655,11 @@ function Experiment(SettingsFile)
   %% cboTrialSlideOL_change
   function cboTrialSlideOL_change(obj, evt)
     S.Experiment.TrialSlideOL = get(obj,'value');
+  end
+
+  %% chkTrialSlideEvents_change
+  function chkTrialSlideEvents_change(obj, evt)
+    S.Experiment.TrialSlideEvents = get(obj,'value');
   end
 
   %% tblCondition_select
