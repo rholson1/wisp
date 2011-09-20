@@ -437,7 +437,7 @@ uiwait(f); % Do not leave function until figure closes.
   function test_audio(obj, events)
     if C.UsePsychPortAudio
       % Based on code from BasicSoundOutputDemo.m (PsychToolBox)
-      a = load('samples\jungle-run'); % load test audio file
+      a = load(fullfile(fileparts(mfilename('fullpath')), 'samples', 'jungle-run.mat')); % load test audio file
       %nrchannels = length(C.OL(workingOL).AudioChannels);
       nrchannels = AudioDevices(AudioOut(get(h.cboAudio,'value'))).NrOutputChannels;
       freq = a.Fs;
