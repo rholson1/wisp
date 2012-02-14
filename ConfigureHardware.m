@@ -47,8 +47,6 @@ end
 
 workingOL = 1;
 
-%MEDIAPLAYER = false; % Use Windows Media Player?  
-
 % Check version (and existance of) Psychtoolbox.
 try 
   PTBver = PsychtoolboxVersion;
@@ -63,33 +61,43 @@ if PTBver < 3
   return
 end
 
-% Load MPlayerControl as a private .NET assembly
-% (should be loaded already, but this will allow ConfigureHardware to be run
-% independenly of WISP as a diagnostic tool)
-try
-  mpcfile = fullfile(fileparts(mfilename('fullpath')),'mpc','MPlayerControl.exe');
-  NET.addAssembly(mpcfile);
-catch ME
-  disp(['Problem adding MPlayerControl assembly. ' ME.message])
+if verLessThan('matlab','7.9') % older than R2009b
+  % Use COM to access MPlayerControl
+  
+  % Try to start MPlayerControl
+  try
+    mplayer = actxserver('MPlayerControl.MPlayerControl');
+    mplayer.Executable = GetMPlayerExecutable();
+    VideoAudioDeviceList = regexp(mplayer.DeviceList,'\|','split');
+  catch e
+    errordlg(['Problem starting MPlayerControl.  Make sure that MPlayerControl has been installed.' e.message], ...
+      'MPlayerControl Error');
+    return
+  end
+else
+  % Use .NET to access MPlayerControl
+  
+  % Load MPlayerControl as a private .NET assembly
+  % (should be loaded already, but this will allow ConfigureHardware to be run
+  % independenly of WISP as a diagnostic tool)
+  try
+    mpcfile = fullfile(fileparts(mfilename('fullpath')),'mpc','MPlayerControl.exe');
+    NET.addAssembly(mpcfile);
+  catch ME
+    disp(['Problem adding MPlayerControl assembly. ' ME.message])
+  end
+  
+  % Try to start MPlayerControl
+  try
+    mplayer = MPlayerControl.MPlayerControl;
+    mplayer.Executable = GetMPlayerExecutable();
+    VideoAudioDeviceList = regexp(mplayer.DeviceList.char,'\|','split');
+  catch e
+    errordlg(['Problem starting MPlayerControl.  Make sure that MPlayerControl has been installed.' e.message], ...
+      'MPlayerControl Error');
+    return
+  end
 end
-
-
-% Try to start MPlayerControl
-try
-  %mplayer = actxserver('MPlayerControl.MPlayerControl');
-  mplayer = MPlayerControl.MPlayerControl;
-  mplayer.Executable = GetMPlayerExecutable();
-  VideoAudioDeviceList = regexp(mplayer.DeviceList.char,'\|','split');
-catch e
-  errordlg(['Problem starting MPlayerControl.  Make sure that MPlayerControl has been installed.' e.message], ...
-    'MPlayerControl Error');
-  return
-  %MEDIAPLAYER = true;
-end
-
-% if MEDIAPLAYER
-%   feature('COM_ActxProgidCheck', 0); % Turn off MediaPlayer ActiveX warning message
-% end
 
 %-------------------------------------------------------------------------
 %  Audio Devices

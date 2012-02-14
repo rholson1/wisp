@@ -24,12 +24,18 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
     return
   end
   
+  % Check matlab version to see if we should use .NET or COM
+  global MPLAYER_COM
+  
   for OLidx = 1:numOL % iterate over output locations
     
     % Try to start MPlayerControl
     try
-      %mplayer{OLidx} = actxserver('MPlayerControl.MPlayerControl');
-      mplayer{OLidx} = MPlayerControl.MPlayerControl;
+      if MPLAYER_COM
+        mplayer{OLidx} = actxserver('MPlayerControl.MPlayerControl');
+      else
+        mplayer{OLidx} = MPlayerControl.MPlayerControl;
+      end
       mplayer{OLidx}.Executable = GetMPlayerExecutable();
       %VideoAudioDeviceList = regexp(mplayer.DeviceList,'\|','split');
     catch e
@@ -74,18 +80,31 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
 
     stop(t{1})
     delete(t{1})
-
-    if ~isvalid(mplayer{numOL}) % the video has already been stopped
+    
+    if (MPLAYER_COM && ~ishandle(mplayer{numOL})) || ...
+        (~MPLAYER_COM && ~isvalid(mplayer{numOL})) % the video has already been stopped
       return
     end
     
-    TimerPeriod = str2double(regexp(mplayer{numOL}.Response.char,'(?<==)\S*','match')) - toc(TimerStart);
+    if MPLAYER_COM
+      TimerPeriod = str2double(regexp(mplayer{numOL}.Response,'(?<==)\S*','match')) - toc(TimerStart);
+    else
+      TimerPeriod = str2double(regexp(mplayer{numOL}.Response.char,'(?<==)\S*','match')) - toc(TimerStart);
+    end
 
     if isempty(TimerPeriod) || isnan(TimerPeriod)
       disp('Problem getting length of movie.')
-      disp(['MPlayer.Response = ' mplayer{numOL}.Response.char])
+      if MPLAYER_COM
+        disp(['MPlayer.Response = ' mplayer{numOL}.Response])
+      else
+        disp(['MPlayer.Response = ' mplayer{numOL}.Response.char])
+      end
       pause(1)
-      disp(['MPlayer.Response after 1 sec delay = ' mplayer{numOL}.Response.char])
+      if MPLAYER_COM
+        disp(['MPlayer.Response after 1 sec delay = ' mplayer{numOL}.Response])
+      else
+        disp(['MPlayer.Response after 1 sec delay = ' mplayer{numOL}.Response.char])
+      end
       return
     end
 
@@ -115,7 +134,11 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
       for OLidx2 = 1:numOL
         mplayer{OLidx2}.Command('stop')
         mplayer{OLidx2}.Command('quit')
-        mplayer{OLidx2}.delete
+        if MPLAYER_COM
+          mplayer{OLidx2}.release
+        else
+          mplayer{OLidx2}.delete
+        end
       end
     catch ME
       disp(' --- Problem stopping mplayer (PlayAudio2)')

@@ -103,14 +103,17 @@ function Experiment(SettingsFile)
     LoadSettings(); % Load from SettingsFile
   end
   
-  % Load MPlayerControl as a private .NET assembly
-  try
-    mpcfile = fullfile(fileparts(mfilename('fullpath')),'mpc','MPlayerControl.exe');
-    NET.addAssembly(mpcfile);
-  catch ME
-    disp(['Problem adding MPlayerControl assembly. ' ME.message])
+  global MPLAYER_COM 
+  MPLAYER_COM = verLessThan('matlab','7.9');
+  if ~MPLAYER_COM
+    % Load MPlayerControl as a private .NET assembly
+    try
+      mpcfile = fullfile(fileparts(mfilename('fullpath')),'mpc','MPlayerControl.exe');
+      NET.addAssembly(mpcfile);
+    catch ME
+      disp(['Problem adding MPlayerControl assembly. ' ME.message])
+    end
   end
-    
   
   %% Create GUI Figure
   f = figure('MenuBar', 'None',  ...
