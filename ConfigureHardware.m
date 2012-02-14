@@ -63,6 +63,17 @@ if PTBver < 3
   return
 end
 
+% Load MPlayerControl as a private .NET assembly
+% (should be loaded already, but this will allow ConfigureHardware to be run
+% independenly of WISP as a diagnostic tool)
+try
+  mpcfile = fullfile(fileparts(mfilename('fullpath')),'mpc','MPlayerControl.exe');
+  NET.addAssembly(mpcfile);
+catch ME
+  disp(['Problem adding MPlayerControl assembly. ' ME.message])
+end
+
+
 % Try to start MPlayerControl
 try
   %mplayer = actxserver('MPlayerControl.MPlayerControl');
