@@ -577,7 +577,8 @@ function R = RunExperiment(S)
               StopFcns{i} = PlayAudio(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata);
             else
               %disp('PlayAudio2')
-              StopFcns{i} = PlayAudio2(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata);
+              if ~isfield(trial.Events(i),'Loop'), trial.Events(i).Loop = 0; end
+              StopFcns{i} = PlayAudio2(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata, trial.Events(i).Loop);
             end
           elseif regexpi(trial.Events(i).StimulusFilename,'\.bmp|\.gif|\.jpg|\.jpeg|\.png')
             % Image
@@ -585,7 +586,8 @@ function R = RunExperiment(S)
           else
             % Video
             %disp('PlayVideo')
-            StopFcns{i} = PlayVideo(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata);
+            if ~isfield(trial.Events(i),'Loop'), trial.Events(i).Loop = 0; end
+            StopFcns{i} = PlayVideo(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata, trial.Events(i).Loop);
           end
           
           EventStarted(i) = true;

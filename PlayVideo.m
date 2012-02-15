@@ -1,4 +1,4 @@
-function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
+function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg, Loop)
   % PLAYVIDEO - Play a video at a specified output location.
   %
   % PlayVideo(C,OL,VideoFileName)
@@ -21,6 +21,13 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
   if numOL == 0
     disp('*** PlayVideo: No output locations defined')
     return
+  end
+  
+  % Loop video?
+  if Loop
+    loopstr = ' -loop 0';
+  else
+    loopstr = '';
   end
   
   % Check matlab version to see if we should use .NET or COM
@@ -60,7 +67,7 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
       ChannelString = [ChannelString ':0:' num2str(C.OL(OL(OLidx)).VideoAudioChannels(i)-1)];
     end
     mplayer{OLidx}.Channels = ChannelString;
-    mplayer{OLidx}.Filename = [' -noborder "' VideoFileName '"'];  % insert -noborder into command line
+    mplayer{OLidx}.Filename = [' -noborder "' VideoFileName '"' loopstr];  % insert -noborder into command line
     
     mplayer{OLidx}.PlayFile(); % Start playback using previous-defined settings
     
@@ -75,7 +82,7 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
   end
   
   % Fire a callback at the end of the movie?
-  USECALLBACK = (nargin == 5);
+  USECALLBACK = (nargin >= 5);
   if USECALLBACK
     % Reqest the movie length (last OL only)
     mplayer{numOL}.Command('pausing_keep get_time_length')
@@ -137,8 +144,10 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg)
         delete(t{2})
       end
     catch ME
-      disp(' *** Problem Deleting Timer in PlayVideo>StopVideo ***')
-      disp([' --- ' ME.message])
+      if ~strcmp(ME.identifier,'MATLAB:UndefinedFunction')
+        disp(' *** Problem Deleting Timer in PlayVideo>StopVideo ***')
+        disp([' --- ' ME.message])
+      end
     end
     
     % Send a stop command to MPlayer (?)

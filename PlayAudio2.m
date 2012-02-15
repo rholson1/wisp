@@ -1,4 +1,4 @@
-function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
+function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg, Loop)
   % PLAYAUDIO2 - Play an audio file at a specified output location.
   %
   % PlayAudio2(C,OL,AudioFileName)
@@ -22,6 +22,13 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
   if numOL == 0
     disp('*** PlayAudio2: No output locations defined')
     return
+  end
+  
+  % Loop audio?
+  if Loop
+    loopstr = ' -loop 0';
+  else
+    loopstr = '';
   end
   
   % Check matlab version to see if we should use .NET or COM
@@ -53,7 +60,7 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
       ChannelString = [ChannelString ':0:' num2str(C.OL(OL(OLidx)).VideoAudioChannels(i)-1)];
     end
     mplayer{OLidx}.Channels = ChannelString;
-    mplayer{OLidx}.Filename = ['"' AudioFileName '"'];
+    mplayer{OLidx}.Filename = ['"' AudioFileName '"' loopstr];
     
     mplayer{OLidx}.PlayFile(); % Start playback using previous-defined settings
     TimerStart = tic;
@@ -62,7 +69,7 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
   end
   
   % Fire a callback at the end of the movie?
-  USECALLBACK = (nargin == 5);
+  USECALLBACK = (nargin >= 5);
   if USECALLBACK
     % Reqest the movie length (last OL only)
     mplayer{numOL}.Command('pausing_keep get_time_length')
@@ -124,8 +131,10 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg)
         delete(t{2})
       end
     catch ME
-      disp(' --- Problem stopping timer (PlayAudio2)')
-      disp(ME.message)
+      if ~strcmp(ME.identifier,'MATLAB:UndefinedFunction')
+        disp(' --- Problem stopping timer (PlayAudio2)')
+        disp(ME.message)
+      end
     end
     
     

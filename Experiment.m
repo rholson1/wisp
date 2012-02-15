@@ -426,6 +426,11 @@ function Experiment(SettingsFile)
           'string','Browse...','fontsize',gui.fs,'position',[660 635 100 25],...
           'callback',@btnStimulusFilename_click);
         
+        % Loop checkbox
+        gui.chkLoop = uicontrol(LevelPanel(4),'style','checkbox',...
+          'string','Loop','fontsize',gui.fs,'position',[770 635 100 25],...
+          'callback',@chkLoop_change);
+        
         % Stimulus Location Subframe
         gui.OutputLocationPanel = uibuttongroup('parent',LevelPanel(4),'title','Stimulus Location',...
           'units','pixels','position',[300 400 400 220],'fontsize',gui.fs,...
@@ -704,6 +709,11 @@ function Experiment(SettingsFile)
         % Stimulus Filename
         set(gui.txtStimulusFilename,'string',S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).StimulusFilename);
         
+        if ~isfield(S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent),'Loop')
+          S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).Loop = 0;
+        end
+        set(gui.chkLoop, 'value', S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).Loop);
+        
         % Output Location Radio Buttons
         set(gui.rdoOLType(S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).OutputLocationType),'value',1);
         
@@ -958,6 +968,7 @@ function Experiment(SettingsFile)
         WorkingEvent = length(S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events) + 1;
         S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).Name = 'New Event';
         S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).StimulusFilename = '';
+        S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).Loop = 0;
         S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).OutputLocationType = 1;
         S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).OutputLocation = [];
         S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).RelatedEvent = '';
@@ -1284,7 +1295,12 @@ function Experiment(SettingsFile)
       setpref('SaffranExperiment','StimulusDir',pname);
     end
   end
-  
+
+  %% chkLoop_change
+  function chkLoop_change(obj, events)
+    S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).Loop = get(obj, 'value');
+  end
+
   %% OutputLocationPanel_change
   function OutputLocationPanel_change(obj, events)
     % Store the index of the Output Location Type
