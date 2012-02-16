@@ -709,7 +709,8 @@ function Experiment(SettingsFile)
         % Stimulus Filename
         set(gui.txtStimulusFilename,'string',S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).StimulusFilename);
         
-        if ~isfield(S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent),'Loop')
+        if ~isfield(S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent),'Loop') || ...
+          isempty(S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).Loop)
           S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).Loop = 0;
         end
         set(gui.chkLoop, 'value', S.Experiment.Phases(WorkingPhase).Items(WorkingItem).Events(WorkingEvent).Loop);
