@@ -69,7 +69,7 @@ function stopfcn = PlayAudio2(C,OL,AudioFileName, Callback, CallbackArg, Loop)
   end
   
   % Fire a callback at the end of the movie?
-  USECALLBACK = (nargin >= 5);
+  USECALLBACK = (nargin >= 5) && ~Loop;
   if USECALLBACK
     % Reqest the movie length (last OL only)
     mplayer{numOL}.Command('pausing_keep get_time_length')
