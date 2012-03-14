@@ -530,67 +530,79 @@ function R = RunExperiment(S)
             set(gui.TrialInfo.txtTrial,'string',['Trial ' num2str(PhaseTrialNum) ' :: ' trial.Events(i).Name]);
           end
           
-          % Determine OL
-          switch trial.Events(i).OutputLocationType
-            case 1 % All selected
-              OL = trial.Events(i).OutputLocation;
-            case 2 % Random within selected
-              
-              % If the current trial is a repeat (from a Repeat On Failure) then randomly select an output location.
-              % Otherwise, use balanced random vector.
-              
-              if REPEATING_TRIAL
-                n_sel = length(trial.Events(i).OutputLocation);
-                OL = trial.Events(i).OutputLocation(ceil(n_sel * rand(1)));  % Starting in R2008b, could use randi(n_sel)
-              else
-                % New Random Selection Code:
-                rv = strcmp(trial.Events(i).RandID,RandIDs); % index of the random vector for this event
-                vp = find(RandVectors{rv},1);                % position of the first non-zero element in the random vector
-                % Use the random vector to choose one of the selected output locations.
-                % The "min" is used to prevent "index out of bounds" errors
-                OL = trial.Events(i).OutputLocation(min(RandVectors{rv}(vp),length(trial.Events(i).OutputLocation)));
-                RandVectors{rv}(vp) = 0; % set the used value to 0 so find( ,1) finds the next element
-              end
-
-            case 3 % Match Event
-              relatedEventID = find(strcmp(trial.Events(i).RelatedEvent,{R.Trials(TrialNum).Events.EventName}));
-              if any(relatedEventID)
-                OL = R.Trials(TrialNum).Events(relatedEventID).Location;
-              else
-                error('Related Event was not found in RunExperiment\TestConditions')
-              end
-          end
-          R.Trials(TrialNum).Events(i).Location = OL;
-          
-          CBdata.TrialID = TrialNum;
-          CBdata.EventID = i;
-          CBdata.OL = OL;
-          
-          % Mark output locations as active (increment counter)
-          ActiveOL(OL) = ActiveOL(OL) + 1;
-          
-          % Test filename to see if audio (.wav) or video file
-          if regexpi(trial.Events(i).StimulusFilename,'\.wav') % If filename ends in .wav ...
-            % Audio
-            if S.Experiment.ShowTrialSlide, set(gui.TrialInfo.txtSoundOn,'string','Sound On'); end
-            if S.OL.UsePsychPortAudio
-              StopFcns{i} = PlayAudio(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata);
-            else
-              %disp('PlayAudio2')
-              if ~isfield(trial.Events(i),'Loop'), trial.Events(i).Loop = 0; end
-              StopFcns{i} = PlayAudio2(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata, trial.Events(i).Loop);
-            end
-          elseif regexpi(trial.Events(i).StimulusFilename,'\.bmp|\.gif|\.jpg|\.jpeg|\.png')
-            % Image
-            StopFcns{i} = PlayImage(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata);
+          if ConditionIsSatisfied(i,'stop')
+            % --- Stop Event i (before really starting) ---
+            logwrite(['Stopping event ' trial.Events(i).Name])
+            % no need to call stop function
+            EventCompleted(i) = true;
+            R.Trials(TrialNum).Events(i).EndTime = now();
+            EventFailed(i) = ConditionIsSatisfied(i,'fail');
+            R.Trials(TrialNum).Events(i).Outcome = EventFailed(i);
           else
-            % Video
-            %disp('PlayVideo')
-            if ~isfield(trial.Events(i),'Loop'), trial.Events(i).Loop = 0; end
-            StopFcns{i} = PlayVideo(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata, trial.Events(i).Loop);
+            % Really start event
+            
+            % Determine OL
+            switch trial.Events(i).OutputLocationType
+              case 1 % All selected
+                OL = trial.Events(i).OutputLocation;
+              case 2 % Random within selected
+                
+                % If the current trial is a repeat (from a Repeat On Failure) then randomly select an output location.
+                % Otherwise, use balanced random vector.
+                
+                if REPEATING_TRIAL
+                  n_sel = length(trial.Events(i).OutputLocation);
+                  OL = trial.Events(i).OutputLocation(ceil(n_sel * rand(1)));  % Starting in R2008b, could use randi(n_sel)
+                else
+                  % New Random Selection Code:
+                  rv = strcmp(trial.Events(i).RandID,RandIDs); % index of the random vector for this event
+                  vp = find(RandVectors{rv},1);                % position of the first non-zero element in the random vector
+                  % Use the random vector to choose one of the selected output locations.
+                  % The "min" is used to prevent "index out of bounds" errors
+                  OL = trial.Events(i).OutputLocation(min(RandVectors{rv}(vp),length(trial.Events(i).OutputLocation)));
+                  RandVectors{rv}(vp) = 0; % set the used value to 0 so find( ,1) finds the next element
+                end
+                
+              case 3 % Match Event
+                relatedEventID = find(strcmp(trial.Events(i).RelatedEvent,{R.Trials(TrialNum).Events.EventName}));
+                if any(relatedEventID)
+                  OL = R.Trials(TrialNum).Events(relatedEventID).Location;
+                else
+                  error('Related Event was not found in RunExperiment\TestConditions')
+                end
+            end
+            R.Trials(TrialNum).Events(i).Location = OL;
+            
+            CBdata.TrialID = TrialNum;
+            CBdata.EventID = i;
+            CBdata.OL = OL;
+            
+            % Mark output locations as active (increment counter)
+            ActiveOL(OL) = ActiveOL(OL) + 1;
+            
+            % Test filename to see if audio (.wav) or video file
+            if regexpi(trial.Events(i).StimulusFilename,'\.wav') % If filename ends in .wav ...
+              % Audio
+              if S.Experiment.ShowTrialSlide, set(gui.TrialInfo.txtSoundOn,'string','Sound On'); end
+              if S.OL.UsePsychPortAudio
+                StopFcns{i} = PlayAudio(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata);
+              else
+                %disp('PlayAudio2')
+                if ~isfield(trial.Events(i),'Loop'), trial.Events(i).Loop = 0; end
+                StopFcns{i} = PlayAudio2(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata, trial.Events(i).Loop);
+              end
+            elseif regexpi(trial.Events(i).StimulusFilename,'\.bmp|\.gif|\.jpg|\.jpeg|\.png')
+              % Image
+              StopFcns{i} = PlayImage(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata);
+            else
+              % Video
+              %disp('PlayVideo')
+              if ~isfield(trial.Events(i),'Loop'), trial.Events(i).Loop = 0; end
+              StopFcns{i} = PlayVideo(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata, trial.Events(i).Loop);
+            end
+            
+            EventStarted(i) = true;
           end
-          
-          EventStarted(i) = true;
         end
         
         % Test the stop condition for EventStarted & ~EventCompleted
