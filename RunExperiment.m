@@ -538,6 +538,10 @@ function R = RunExperiment(S)
             R.Trials(TrialNum).Events(i).EndTime = now();
             EventFailed(i) = ConditionIsSatisfied(i,'fail');
             R.Trials(TrialNum).Events(i).Outcome = EventFailed(i);
+            
+            if ConditionIsSatisfied(i,'stoptrial')
+              flag_EndTrial = true;
+            end
           else
             % Really start event
             
@@ -606,15 +610,20 @@ function R = RunExperiment(S)
         end
         
         % Test the stop condition for EventStarted & ~EventCompleted
-        if EventStarted(i) && ~EventCompleted(i) && ConditionIsSatisfied(i,'stop')
-          % --- Stop Event i ---
-          
-          logwrite(['Stopping Event ' trial.Events(i).Name])
-          
-          % Call stop function
-          feval(StopFcns{i});
-          
-          EventCompleted(i) = true;
+        if EventStarted(i) && ~EventCompleted(i) 
+          if ConditionIsSatisfied(i,'stop')
+            % --- Stop Event i ---
+            
+            logwrite(['Stopping Event ' trial.Events(i).Name])
+            
+            % Call stop function
+            feval(StopFcns{i});
+            
+            EventCompleted(i) = true;
+          end
+          if ConditionIsSatisfied(i,'stoptrial')
+            flag_EndTrial = true;
+          end
         end
       end
       
@@ -657,6 +666,12 @@ function R = RunExperiment(S)
           sc = trial.Events(evtidx).StopCondition;
         case 'fail'
           sc = trial.Events(evtidx).FailCondition;
+        case 'stoptrial'
+          if isfield(trial.Events(evtidx),'StopTrialCondition')
+            sc = trial.Events(evtidx).StopTrialCondition;
+          else
+            sc = '';
+          end
         otherwise
           error('Unexpected ConditionType in RunExperiment/ConditionIsSatisfied')
       end
