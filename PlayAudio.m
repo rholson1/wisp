@@ -1,4 +1,4 @@
-function stopfcn = PlayAudio(C,OL,AudioFileName,Callback,CallbackArg)
+function stopfcn = PlayAudio(C,OL,AudioFileName,Callback,CallbackArg,Loop)
 % PLAYAUDIO - Play an audio file at a specified location.
 %
 % PlayAudio(C,OL,AudioFileName)
@@ -16,7 +16,13 @@ function stopfcn = PlayAudio(C,OL,AudioFileName,Callback,CallbackArg)
 % 2010-8-10 : Added support for multiple output locations
 
 % Was a callback function supplied?
-RUNCALLBACK = (nargin == 5);
+RUNCALLBACK = (nargin >= 5) && ~Loop;
+
+if Loop
+  Repetitions = 0;
+else
+  Repetitions = 1;
+end
 
 [y, freq, nbits] = wavread(AudioFileName);        % Read audio file
 y = y(:,1)';                                      % Pick the first channel and make a row vector
@@ -38,13 +44,15 @@ for OLidx = 1:NumOL
   
   pahandles(OLidx) = PsychPortAudio('Open', deviceid, [], 0, freq, nrchannels,[],[],[]);  % Open audio device
   PsychPortAudio('FillBuffer', pahandles(OLidx), w);    % Fill buffer with audio data
-  PsychPortAudio('Start', pahandles(OLidx), [], 0, 1);  % Start playback immediately
+  PsychPortAudio('Start', pahandles(OLidx), Repetitions, 0, 1);  % Start playback immediately
 end
 
-% Use a timer to stop the audio device
-TimerPeriod = fix(totaltime * 1000)/1000;                    % Millisecond precision
-t = timer('StartDelay',TimerPeriod,'TimerFcn',@StopAudio);   % Create timer object
-start(t);                                                    % Start timer to stop playback
+if ~Loop
+  % Use a timer to stop the audio device
+  TimerPeriod = fix(totaltime * 1000)/1000;                    % Millisecond precision
+  t = timer('StartDelay',TimerPeriod,'TimerFcn',@StopAudio);   % Create timer object
+  start(t);                                                    % Start timer to stop playback
+end
 
 stopfcn = @StopAudio;
 
@@ -53,8 +61,11 @@ stopfcn = @StopAudio;
     for ii = 1:NumOL
       PsychPortAudio('Close', pahandles(ii)); % Close PortAudio devices
     end
-    stop(t)
-    delete(t)
+    
+    if ~Loop
+      stop(t)
+      delete(t)
+    end
     
     if RUNCALLBACK
       Callback(CallbackArg)

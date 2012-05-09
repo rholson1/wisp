@@ -589,7 +589,7 @@ function R = RunExperiment(S)
               % Audio
               if S.Experiment.ShowTrialSlide, set(gui.TrialInfo.txtSoundOn,'string','Sound On'); end
               if S.OL.UsePsychPortAudio
-                StopFcns{i} = PlayAudio(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata);
+                StopFcns{i} = PlayAudio(S.OL, OL, trial.Events(i).StimulusFilename, @EndEvent, CBdata, trial.Events(i).Loop);
               else
                 %disp('PlayAudio2')
                 if ~isfield(trial.Events(i),'Loop'), trial.Events(i).Loop = 0; end
