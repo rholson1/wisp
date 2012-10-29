@@ -146,6 +146,7 @@ function Experiment(SettingsFile)
   % Experiment
   gui.menu.experiment = uimenu(f,'Label','Experiment');
   uimenu(gui.menu.experiment,'Label','Edit','callback',{@ChangeLevel,1})
+  uimenu(gui.menu.experiment,'Label','Check','callback',@Check_Experiment)
   uimenu(gui.menu.experiment,'Label','Run','callback',{@ChangeLevel,5})
   
   % Results
@@ -1724,7 +1725,54 @@ function Experiment(SettingsFile)
     end
     set(gui.tblCondition,'Data',condData);
   end
-  
+
+
+  %% Check Experiment
+  function Check_Experiment(obj, evt)
+    % Look for problems in the experiment design which may result in
+    % unexpected behavior.
+    
+    msg = {};
+    
+    % 1. Invalid event names in expressions.
+    for p_id = 1:length(S.Experiment.Phases)
+      for i_id = 1:length(S.Experiment.Phases(p_id).Items)
+        for e_id = 1:length(S.Experiment.Phases(p_id).Items(i_id).Events)
+          % Check EventType to select objects to test -- looking for types 2 or 3
+          a_list = find(ismember(S.Experiment.Phases(p_id).Items(i_id).Events(e_id).EventTypeA, [2 3]));
+          b_list = find(ismember(S.Experiment.Phases(p_id).Items(i_id).Events(e_id).EventTypeB, [2 3]));
+          
+          for z = 1:length(a_list)
+            evtname = S.Experiment.Phases(p_id).Items(i_id).Events(e_id).ObjectA{a_list(z)};
+            if ~any(strcmp(evtname, {S.Experiment.Phases(p_id).Items(i_id).Events.Name}))
+              % The event named in an expression does not exist.
+              m = ['Phase ' num2str(p_id) ', Item ' num2str(i_id) ', Event ' num2str(e_id) ...
+                ', Expression e' num2str(S.Experiment.Phases(p_id).Items(i_id).Events(e_id).ExpressionID(a_list(z))) ...
+                ' refers to an event which does not exist.'];
+              msg = [msg; m];
+            end
+          end
+          
+          for z = 1:length(b_list)
+            evtname = S.Experiment.Phases(p_id).Items(i_id).Events(e_id).ObjectA{b_list(z)};
+            if ~any(strcmp(evtname, {S.Experiment.Phases(p_id).Items(i_id).Events.Name}))
+              % The event named in an expression does not exist.
+              m = ['Phase ' num2str(p_id) ', Item ' num2str(i_id) ', Event ' num2str(e_id) ...
+                ', Expression e' num2str(S.Experiment.Phases(p_id).Items(i_id).Events(e_id).ExpressionID(b_list(z))) ...
+                ' refers to an event which does not exist.'];
+              msg = [msg; m];
+            end
+          end
+        end
+      end
+    end
+    if isempty(msg)
+      msgbox('No problems found.','Check Complete');
+    else
+      msgbox(msg, 'Check Complete');
+    end
+  end
+    
   %% IIF function
   function result=iif(cond, t, f)
     if cond
