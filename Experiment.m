@@ -914,6 +914,14 @@ function Experiment(SettingsFile)
       ss = ss{1};
       fclose(fid);
       S = [];
+      
+      % If the settings file was modified by an external editor, it may
+      % have been saved as UTF-8 with a byte-order mark at the start of the
+      % file.  In this case, strip out the mark (three characters).
+      if length(ss{1}) > 2 && strcmp(ss{1}(1:3), char([239 187 191]))
+        ss{1} = ss{1}(4:end);
+      end
+      
       eval(sprintf('%s\n',ss{:}));
     end
     
