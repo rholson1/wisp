@@ -577,7 +577,7 @@ function [headers, data, datafmt] = createOutput_habituation(S)
     ItemsInPhase = length(S.Experiment.Phases(PhaseNumber).Items);
     data{t,5} = ceil(data{t,1}/ItemsInPhase);   % Compute block based on number of items in phase
     
-    if length(S.Results.Trials(t).Events) > 1
+    if length(S.Results.Trials(t).Events) > 2
       data{t,4} = S.Results.Trials(t).Events(3).Location; % The third event supplies the Output Location here.
     else
       continue
