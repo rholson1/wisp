@@ -10,6 +10,15 @@ function Experiment(SettingsFile)
   % Robert H. Olson, Ph.D., rolson@waisman.wisc.edu
   
   
+  % Reset random number generator based on the current time
+  if verLessThan('matlab','7.7')
+    rand('twister', sum(100*clock)); %#ok<RAND>
+  elseif verLessThan('matlab','7.12')
+    RandStream.setDefaultStream(RandStream('mt19937ar','seed',sum(100*clock))); %#ok<SETRS>
+  else
+    rng('shuffle');
+  end
+  
   %% Global Variables
   % Status Variables
   CurrentLevel = 1; % 1-4 {Experiment, Phase, Item, Event}
