@@ -279,7 +279,7 @@ function R = RunExperiment(S)
       % Run Trial
       trialSucceeded = RunTrial(phase.Items(TrialSequence(tidx)));
       
-      if ~trialSucceeded && BlockSequence(tidx) % do not repeat if BlockSequence(tidx)==0
+      if ~trialSucceeded && fix(BlockSequence(tidx)) % do not repeat if BlockSequence(tidx)==0
         
         if phase.Items(TrialSequence(tidx)).RepeatsAllowed == 1
           % Repeat once
