@@ -1059,6 +1059,13 @@ function R = RunExperiment(S)
     uicontrol(infoslidefig,'style','text','units','normalized','position',[0 0.25 1 0.25],'string',S.Results.SubjectID,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
     uicontrol(infoslidefig,'style','text','units','normalized','position',[0 0.00 1 0.25],'string',S.Results.DateTime,'fontunits','normalized','fontsize',.5,'backgroundcolor','w');
     
+    % If fullscreen, maximize the window using undocumented feature.
+    % See http://undocumentedmatlab.com/blog/minimize-maximize-figure-window/
+    if S.OL.OL(S.Experiment.InfoSlideOL).Fullscreen
+        jFrame = get(handle(infoslidefig),'JavaFrame');
+        jFrame.setMaximized(true);
+    end
+    
     % Close the figure after 2 seconds
     pause(2)
     delete(infoslidefig);
@@ -1092,6 +1099,13 @@ function R = RunExperiment(S)
       TrialInfo.txtPhase = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.40 1 0.20],'string','Phase Name','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
       TrialInfo.txtTrial = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.20 1 0.20],'string','Subject ID','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
       TrialInfo.txtSoundOn = uicontrol(TrialInfo.f,'style','text','units','normalized','position',[0 0.00 1 0.20],'string','Sound On','fontunits','normalized','fontsize',.5,'backgroundcolor','w');
+      
+      % If fullscreen, maximize the window using undocumented feature.  
+      % See http://undocumentedmatlab.com/blog/minimize-maximize-figure-window/
+      if S.OL.OL(S.Experiment.TrialSlideOL).Fullscreen
+          jFrame = get(handle(TrialInfo.f),'JavaFrame');
+          jFrame.setMaximized(true);
+      end
       
     else
       % Delete Trial Information figure
