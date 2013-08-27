@@ -541,6 +541,8 @@ function [headers, data, datafmt] = createOutput_habituation(S)
   % first phase.
   % Remove spaces and punctuation from column names.
   
+  % Updates: 8/27/2013 (edit Habituation)
+  % Insert new column "TrialsToHabituation" at column 13
   
   % Compute age at testing (in days) outside of the trial loop for efficiency
   if isempty(S.Results.Birthdate) || isempty(S.Results.DateTime)
@@ -556,13 +558,14 @@ function [headers, data, datafmt] = createOutput_habituation(S)
   ConditionCount = size(S.Results.Condition,1); % Number of rows in condition cell array
   
   headers = sprintf(['Trial\tPhase\tItem\tLocation\tBlock\tUncorrectedLook\tCorrectedLook\tLooksAway\tPreLook\tPostLook\tFirstThree\tLastThree' ...
+      '\tTrialsToHabituation' ...
       '\tProtocol\tSubjectID\tTester\tGender\tAge\tComments' sprintf('\\t%s',S.Results.Condition{:,1})]);
  
-  datafmt = ['%d\t%d\t%s\t' repmat('%d\t',1,9) repmat('%s\t',1,4) '%d\t' repmat('%s\t',1,1+ConditionCount) '\n'];
+  datafmt = ['%d\t%d\t%s\t' repmat('%d\t',1,9) '%d\t' repmat('%s\t',1,4) '%d\t' repmat('%s\t',1,1+ConditionCount) '\n'];
   
   nt = length(S.Results.Trials); % Number of trials
   
-  data = cell(nt,15+ConditionCount); % Initialize data cell array
+  data = cell(nt,19+ConditionCount); % Initialize data cell array
   
   % Loop over trials, completing one row in data array per trial
   for t = 1:nt
@@ -611,14 +614,14 @@ function [headers, data, datafmt] = createOutput_habituation(S)
       data(t,6:10) = {0 0 0 0 0}; % If no correct responses, set everything to 0
     end
     
-    data{t,13} = S.Experiment.Name;
-    data{t,14} = S.Results.SubjectID;
-    data{t,15} = S.Results.Tester;
-    data{t,16} = S.Results.Gender;
-    data{t,17} = AgeInDays;
-    data{t,18} = S.Results.Comments'; 
+    data{t,14} = S.Experiment.Name;
+    data{t,15} = S.Results.SubjectID;
+    data{t,16} = S.Results.Tester;
+    data{t,17} = S.Results.Gender;
+    data{t,18} = AgeInDays;
+    data{t,19} = S.Results.Comments'; 
     
-    data(t,19:18+ConditionCount) = S.Results.Condition(:,2)';
+    data(t,20:19+ConditionCount) = S.Results.Condition(:,2)';
   end
   
   % Add columns for sum of Corrected look for first three and last three
@@ -626,9 +629,11 @@ function [headers, data, datafmt] = createOutput_habituation(S)
   phase1trials = [data{:,2}] == 1;
   first3 = find(phase1trials, 3);
   last3 = find(phase1trials, 3, 'last');
+  trials_to_habituation = nnz(phase1trials);
   
   data(:,11) = num2cell(sum([data{first3,7}]) * ones(nt,1)); % sum of first three corrected looks
   data(:,12) = num2cell(sum([data{last3,7}]) * ones(nt,1)); % sum of last three corrected looks in phase 1
+  data(:,13) = num2cell(trials_to_habituation * ones(nt,1)); % number of trials in the first (habituation) phase
   
   data = data';
   
