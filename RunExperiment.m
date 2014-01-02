@@ -1062,6 +1062,8 @@ function R = RunExperiment(S)
     % If fullscreen, maximize the window using undocumented feature.
     % See http://undocumentedmatlab.com/blog/minimize-maximize-figure-window/
     if S.OL.OL(S.Experiment.InfoSlideOL).Fullscreen
+        drawnow;
+        pause(.1);
         jFrame = get(handle(infoslidefig),'JavaFrame');
         jFrame.setMaximized(true);
     end
@@ -1103,6 +1105,8 @@ function R = RunExperiment(S)
       % If fullscreen, maximize the window using undocumented feature.  
       % See http://undocumentedmatlab.com/blog/minimize-maximize-figure-window/
       if S.OL.OL(S.Experiment.TrialSlideOL).Fullscreen
+          drawnow;
+          pause(.1);
           jFrame = get(handle(TrialInfo.f),'JavaFrame');
           jFrame.setMaximized(true);
       end

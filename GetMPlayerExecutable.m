@@ -6,6 +6,6 @@ function mplayerpath = GetMPlayerExecutable()
 
 % 2010-11-29 : Created by Robert H. Olson, Ph.D., rolson@waisman.wisc.edu
 
-mplayerpath = 'C:\Program Files\SMPlayer\mplayer\mplayer.exe'; % IKARA
+mplayerpath = 'C:\Program Files (x86)\SMPlayer\mplayer\mplayer.exe'; 
 
 end
