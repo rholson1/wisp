@@ -9,7 +9,7 @@ Installation
 ------------
 
 Installation instructions are given in sw_install.pdf_ , located in the Downloads section.  
-In the Branches tab of the Downloads section, you can download the entire WISP_ repository as a .zip file.
+In the Branches tab of the Downloads section, you can download the entire WISP_ repository as a .zip file.  Other files in the Downloads section describe a possible hardware setup that could be used with WISP.  Unfortunately, some of the hardware described is no longer available.
 
 
 Prerequisites
@@ -24,6 +24,6 @@ When WISP was written, PsychToolbox was 32-bit only, so the 32-bit version of Ma
 
 
 .. _sw_install.pdf: https://bitbucket.org/rholson1/wisp/downloads/sw_install.pdf
-.. WISP_: https://bitbucket.org/rholson1/wisp/get/default.zip
+.. _WISP: https://bitbucket.org/rholson1/wisp/get/default.zip
 
 
