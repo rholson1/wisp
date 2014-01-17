@@ -8,27 +8,27 @@ WISP is a MATLAB-based program for creating and running experimental paradigms s
 Installation
 ------------
 
-1. Install prerequisistes.
+- Install prerequisistes.
 
-   a. Install Matlab_.  Both 32-bit and 64-bit versions of Matlab are now supported.
+   - Install Matlab_.  Both 32-bit and 64-bit versions of Matlab are now supported.
 
-   b. Install PsychToolbox_.
+   - Install PsychToolbox_.
 
-   c. Install SMPlayer_, a video playback package which includes MPlayer, the program WISP uses to play videos.
+   - Install SMPlayer_, a video playback package which includes MPlayer, the program WISP uses to play videos.
 
-2. Install WISP_
+- Install WISP_
 
-   1. In the Branches tab of the Downloads section, you can download the entire WISP_ repository as a .zip file.  Other files in the Downloads section describe a possible hardware setup that could be used with WISP.  Unfortunately, some of the hardware described is no longer available.
+   - In the Branches tab of the Downloads section, you can download the entire WISP_ repository as a .zip file.  Other files in the Downloads section describe a possible hardware setup that could be used with WISP.  Unfortunately, some of the hardware described is no longer available.
 
-   2. Copy the WISP folder from the WISP package to some sensible location on your hard disk, such as C:\toolboxes\WISP.  If you choose a different location, adjust the following instructions accordingly.
+   - Copy the WISP folder from the WISP package to some sensible location on your hard disk, such as C:\toolboxes\WISP.  If you choose a different location, adjust the following instructions accordingly.
 
-   3. Make site-specific changes to WISP function **GetMPlayerExecutable.m**.
+   - Make site-specific changes to WISP function **GetMPlayerExecutable.m**.
 
       WISP needs to know where mplayer.exe is located.  Update GetMPlayerExecutable.m in the WISP directory to reflect the location on your system, which will be within the SMPlayer program directory.  You will probably want to change the line which begins ``mplayerpath =`` to something like::
 
          mplayerpath = 'C:\Program Files\SMPlayer\MPlayer\mplayer.exe';
 
-   4. Add the WISP folder to your Matlab path::
+   - Add the WISP folder to your Matlab path::
 
       >> addpath C:\toolboxes\WISP
       >> savepath
