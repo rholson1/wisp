@@ -8,15 +8,15 @@ WISP is a MATLAB-based program for creating and running experimental paradigms s
 Installation
 ------------
 
-A. Install prerequisistes.
+1. Install prerequisistes.
 
-   1. Install Matlab_.  Both 32-bit and 64-bit versions of Matlab are now supported.
+   a. Install Matlab_.  Both 32-bit and 64-bit versions of Matlab are now supported.
 
-   2. Install PsychToolbox_.
+   b. Install PsychToolbox_.
 
-   3. Install SMPlayer_, a video playback package which includes MPlayer, the program WISP uses to play videos.
+   c. Install SMPlayer_, a video playback package which includes MPlayer, the program WISP uses to play videos.
 
-B. Install WISP_
+2. Install WISP_
 
    1. In the Branches tab of the Downloads section, you can download the entire WISP_ repository as a .zip file.  Other files in the Downloads section describe a possible hardware setup that could be used with WISP.  Unfortunately, some of the hardware described is no longer available.
 
@@ -26,7 +26,7 @@ B. Install WISP_
 
       WISP needs to know where mplayer.exe is located.  Update GetMPlayerExecutable.m in the WISP directory to reflect the location on your system, which will be within the SMPlayer program directory.  You will probably want to change the line which begins ``mplayerpath =`` to something like::
 
-      mplayerpath = 'C:\Program Files\SMPlayer\MPlayer\mplayer.exe';
+         mplayerpath = 'C:\Program Files\SMPlayer\MPlayer\mplayer.exe';
 
    4. Add the WISP folder to your Matlab path::
 
