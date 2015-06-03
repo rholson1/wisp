@@ -1783,6 +1783,27 @@ function Experiment(SettingsFile)
         end
       end
     end
+    
+    % 2. Missing event fields Loop, StopTrialCondition
+    for p_id = 1:length(S.Experiment.Phases)
+      for i_id = 1:length(S.Experiment.Phases(p_id).Items)
+        for e_id = 1:length(S.Experiment.Phases(p_id).Items(i_id).Events)
+            % Loop
+            if ~isfield(S.Experiment.Phases(p_id).Items(i_id).Events(e_id),'Loop') || ...
+              isempty(S.Experiment.Phases(p_id).Items(i_id).Events(e_id).Loop)
+              S.Experiment.Phases(p_id).Items(i_id).Events(e_id).Loop = 0;
+            end
+            
+            % StopTrialCondition
+            if ~isfield(S.Experiment.Phases(p_id).Items(i_id).Events(e_id),'StopTrialCondition')
+              S.Experiment.Phases(p_id).Items(i_id).Events(e_id).StopTrialCondition = '';
+            end
+        end
+      end
+    end
+    
+    
+    
     if isempty(msg)
       msgbox('No problems found.','Check Complete');
     else
