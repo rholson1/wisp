@@ -16,7 +16,7 @@ function stopfcn = PlayAudio(C,OL,AudioFileName,Callback,CallbackArg,Loop)
 % 2010-8-10 : Added support for multiple output locations
 
 % Was a callback function supplied?
-RUNCALLBACK = (nargin >= 5) && ~Loop;
+RUNCALLBACK = (nargin >= 5);
 
 if Loop
   Repetitions = 0;
