@@ -117,7 +117,7 @@ AudioDeviceList = arrayfun(@(x)[x.DeviceName ' (' x.HostAudioAPIName ')'],AudioD
 %-------------------------------------------------------------------------
 % Display Devices
 %-------------------------------------------------------------------------
-DisplayDevices = get(0,'MonitorPosition');
+DisplayDevices = OldStyleMonitorPositions;
 DisplayDeviceList = cellstr(num2str(DisplayDevices));
 %-------------------------------------------------------------------------
 % UI 
@@ -141,7 +141,7 @@ f = figure('Name', 'Output Locations', ...
   %'WindowStyle','modal');
 
 
-m = get(0,'MonitorPosition');
+m = OldStyleMonitorPositions;
 NumDisplays = size(m,1);
 
 % Select number of output locations

@@ -30,7 +30,7 @@ function stopfcn = PlayImage(C,OL,ImageFileName, Callback, CallbackArg)
     img = imread(ImageFileName);   % Read image file
   end
   
-  mp = get(0,'MonitorPosition'); % Get monitor positions (necessary to relate OL position to screen ID
+  mp = OldStyleMonitorPositions; % Get monitor positions (necessary to relate OL position to screen ID)
   
   % Check to see if ImageDisplayMode has been set.  If not, use default.
   if ~isfield(C,'ImageDisplayMode'), C.ImageDisplayMode=1; end
