@@ -191,6 +191,21 @@ function R = RunExperiment(S)
         for i = 1:Reps
           TrialSequence((i-1)*ItemCount+1:i*ItemCount) = randperm(ItemCount);
         end
+      case 5 % Random within Blocks (no repetition)
+        for i = 1:Reps
+          if i == 1
+            nextset = randperm(ItemCount);
+          else
+            % Generate a random sequence for the next block which doesn't
+            % start with the last entry of the previous block.
+            repetition = true;  
+            while repetition
+               nextset = randperm(ItemCount);
+               repetition = nextset(1) == TrialSequence((i-1)*ItemCount);
+            end
+          end
+          TrialSequence((i-1)*ItemCount+1:i*ItemCount) = nextset;
+        end
       otherwise
         error('RunExperiment: Unexpected value of phase.ItemOrder')
     end

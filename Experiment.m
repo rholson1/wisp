@@ -34,7 +34,7 @@ function Experiment(SettingsFile)
   G.LevelNames = {'Experiment' 'Phase' 'Item' 'Event' 'Run'};
   G.PhaseOrder = {'Sequential' 'Random'};
   G.PhaseEnd = {'Fixed' 'Time' 'Contingent'};
-  G.ItemOrder = {'Sequential' 'Random with Replacement' 'Random without Replacement' 'Random within Blocks'};
+  G.ItemOrder = {'Sequential' 'Random with Replacement' 'Random without Replacement' 'Random within Blocks' 'Random within Blocks (no repeats)'};
   G.Measure = {'sum(on-target)' 'ave(on-target)'};
   G.Group = {'First n Trials' 'Last n Trials' 'All Trials'};
   G.Operators = {' +' ' -' ' *' ' /'};
