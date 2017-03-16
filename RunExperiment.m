@@ -1046,7 +1046,7 @@ function R = RunExperiment(S)
     % Determine the coordinates of the figure from the OL    
     OLcoords = S.OL.OL(S.Experiment.InfoSlideOL).DisplayCoords;
     
-    mp = get(0,'monitorposition'); % Get position of monitors
+    mp = OldStyleMonitorPositions; % Get position of monitors
     
     % If fullscreen, get the coordinates of the screen
     if S.OL.OL(S.Experiment.InfoSlideOL).Fullscreen
@@ -1097,7 +1097,7 @@ function R = RunExperiment(S)
       % Determine the coordinates of the figure from the OL
       OLcoords = S.OL.OL(S.Experiment.TrialSlideOL).DisplayCoords;
       
-      mp = get(0,'monitorposition'); % Get position of monitors
+      mp = OldStyleMonitorPositions; % Get position of monitors
       
       % If fullscreen, get the coordinates of the screen
       if S.OL.OL(S.Experiment.TrialSlideOL).Fullscreen
