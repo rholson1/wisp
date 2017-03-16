@@ -19,7 +19,7 @@ function OUTPUT_FORMATS = ProcessResults(fnames, outputformat, batchmode)
   %% Validate Arguments
 
   % Make sure outputformat is one of the defined formats
-  OUTPUT_FORMATS = {'Format 1' 'Headturn' 'Headturn2' 'Habituation'};
+  OUTPUT_FORMATS = {'Format 1' 'Headturn' 'Headturn2' 'Headturn3' 'Habituation'};
   if nargin == 0
     return
   end
@@ -88,7 +88,9 @@ function OUTPUT_FORMATS = ProcessResults(fnames, outputformat, batchmode)
         [headers, data, datafmt] = createOutput_headturn(S);
       case 3
         [headers, data, datafmt] = createOutput_headturn2(S);
-      case 4
+       case 4
+        [headers, data, datafmt] = createOutput_headturn3(S);
+      case 5
         [headers, data, datafmt] = createOutput_habituation(S);        
       otherwise
         fprintf(1,'find(OFidx) = '), disp(find(OFidx))
@@ -482,6 +484,138 @@ function [headers, data, datafmt] = createOutput_headturn2(S)
   data = data';
   
 end % createOutput_headturn2
+
+
+function [headers, data, datafmt] = createOutput_headturn3(S)
+  
+  % Headturn Experiment Output Filter
+  
+  % -- Existing Headturn Output Format --
+  % Column 1: experiment number (it always says 1, so we can just get rid of this column)
+  % Column 2: trial #
+  % Column 3: Block #
+  % Column 4: Test item #
+  % Column 5: Target side (0 = right; 1 = left)
+  % Column 6: Total attention time (i.e., time the baby spends looking directly at the side-light minus the 
+  %           time the baby looked away). This is the main column we use for data analysis.
+  % Column 7: Number of aways lasting < 2 seconds 
+  %             0 = the baby never looked away and the trial ended because it maxed out at 15 seconds
+  %             1 = the baby turned away once but looked back soon enough that the sound continued playing; 
+  %             2 = the baby turned away twice...
+  %             etc...
+  % Column 8: Test item # (not sure why this column repeats itself - we should just get rid of it)
+  % Column 9: Total time the side light blinks *before* the baby turns to look at it (sound does not play during this time)
+  % Column 10: Total time the side light blinks *after* the baby turns to look at it (i.e., total time the sound plays regardless of whether the baby is looking)
+  
+  % -- New Headturn Output Format --
+  % Column 1: trial # (1:n)
+  % Column 2: Block # (corresponds to phase)
+  % Column 3: Item # (placement of item within phase, prior to randomization, etc)
+  % Column 4: OL
+  % Column 5: Sum of "Correct" for the trial
+  % Column 6: Number of "Correct" keypresses - 1
+  % Column 7: Time before first "Correct" keypress and after the previous incorrect keypress
+  % Column 8: Time after first "Correct" keypress
+  
+  
+  % New columns (12-15-2010):
+  % Column 9: Experiment Name (Protocol)
+  % Column 10: Subject ID
+  % Column 11: Tester
+  % Column 12: Gender
+  % Column 13: Age at testing (days)
+  % Column 14: Comments
+  % Column 15-: Condition(s)
+  
+  % Updates: 1/31/2011
+  % Number trials within phase
+  % Add column for block number (also numbered within phase?)
+  %
+  % 2/20/2017
+  % Insert column before Protocol with stimulus filename
+  
+  % Compute age at testing (in days) outside of the trial loop for efficiency
+  if isempty(S.Results.Birthdate) || isempty(S.Results.DateTime)
+    AgeInDays = 0;
+  else
+    AgeInDays = fix(datenum(S.Results.DateTime) - datenum(S.Results.Birthdate));
+  end
+  
+  % Put conditions in a standard format {'Cond. Name 1' 'Condition 1';...}
+  if ~iscell(S.Results.Condition)
+      S.Results.Condition = {'Condition' S.Results.Condition};
+  end
+  ConditionCount = size(S.Results.Condition,1); % Number of rows in condition cell array
+  
+  headers = sprintf(['Trial\tPhase\tItem\tLocation\tBlock\tLooking Time (ms)\tLooks Away\tPreLook (ms)\tPostLook (ms)' ...
+      '\tSoundFile\tProtocol\tSubject ID\tTester\tGender\tAge (days)\tComments' sprintf('\\t%s',S.Results.Condition{:,1})]);
+ 
+  datafmt = [repmat('%d\t',1,9) repmat('%s\t',1,5) '%d\t' repmat('%s\t',1,1+ConditionCount) '\n'];
+  
+  nt = length(S.Results.Trials); % Number of trials
+  
+  data = cell(nt,16+ConditionCount); % Initialize data cell array
+  
+  % Loop over trials, completing one row in data array per trial
+  for t = 1:nt
+    PhaseNumber = find(strcmp(S.Results.Trials(t).PhaseName,{S.Experiment.Phases.Name}),1);
+    ItemNumber = find(strcmp(S.Results.Trials(t).ItemName,{S.Experiment.Phases(PhaseNumber).Items.Name}),1);
+    
+    %data{t,1} = t;
+    data{t,2} = PhaseNumber;
+    data{t,1} = nnz(PhaseNumber == [data{1:t,2}]); % Number trials within each phase
+    data{t,3} = ItemNumber; 
+    
+    ItemsInPhase = length(S.Experiment.Phases(PhaseNumber).Items);
+    data{t,5} = ceil(data{t,1}/ItemsInPhase);   % Compute block based on number of items in phase
+    
+    if length(S.Results.Trials(t).Events) > 1
+      data{t,4} = S.Results.Trials(t).Events(2).Location; % The second event is the right or left light, by convention
+    else
+      continue
+    end
+    
+    if ~isfield(S.Results.Trials(t).Responses,'Correct')
+      S.Results.Trials(t).Responses.Correct = 0;
+    end
+    
+    correct_responses = logical([S.Results.Trials(t).Responses.Correct]);
+    
+    if any(correct_responses)
+      data{t,6} = fix(sum([S.Results.Trials(t).Responses(correct_responses).Duration])*1000); % Sum, convert from s to ms  
+      data{t,7} = max(nnz(correct_responses)-1, 0); % Number of breaks between correct responses (at least 0)
+      
+      % Time between end of first event and start of first correct keypress
+      firsteventend = S.Results.Trials(t).Events(1).EndTime;
+      firstcorrect = S.Results.Trials(t).Responses(find(correct_responses,1)).PressTime;
+      data{t,8} = fix(etime(datevec(firstcorrect),datevec(firsteventend)) * 1000);
+      
+      % Time between first correct keypress and end of second event
+      secondeventend = S.Results.Trials(t).Events(2).EndTime;
+      data{t,9} = fix(etime(datevec(secondeventend),datevec(firstcorrect)) * 1000);
+    else
+      data(t,6:9) = {0 0 0 0}; % If no correct responses, set everything to 0
+    end
+    
+    if length(S.Experiment.Phases(PhaseNumber).Items(ItemNumber).Events) >= 3;
+      data{t,10} = S.Experiment.Phases(PhaseNumber).Items(ItemNumber).Events(3).StimulusFilename;
+    else
+       data{t,10} = '-';
+    end
+    data{t,11} = S.Experiment.Name;
+    data{t,12} = S.Results.SubjectID;
+    data{t,13} = S.Results.Tester;
+    data{t,14} = S.Results.Gender;
+    data{t,15} = AgeInDays;
+    data{t,16} = S.Results.Comments'; 
+    
+    data(t,17:16+ConditionCount) = S.Results.Condition(:,2)';
+  end
+
+  data = data';
+  
+end % createOutput_headturn3
+
 
 
 function [headers, data, datafmt] = createOutput_habituation(S)
