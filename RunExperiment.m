@@ -469,6 +469,7 @@ function R = RunExperiment(S)
     R.Trials(TrialNum).Responses = [];
     
     KeyData = zeros(size(KeyData)); % Reset keypress information
+    ActiveOL(:) = 0; % Reset output location tracking info
     
     % Process events.
     EventCount = length(trial.Events);
@@ -651,6 +652,12 @@ function R = RunExperiment(S)
       t_id = event_args.TrialID;
       e_id = event_args.EventID;
       ol_id = event_args.OL;
+      
+      % Do not execute if event has already completed or OL is not marked
+      % as active.
+      if EventCompleted(e_id) || ActiveOL(ol_id) == 0
+          return
+      end
       
       % Set Events.EndTime to now()
       R.Trials(t_id).Events(e_id).EndTime = now();
