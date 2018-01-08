@@ -14,6 +14,7 @@ function stopfcn = PlayAudio(C,OL,AudioFileName,Callback,CallbackArg,Loop)
 %
 % 2010-5-18 : Created by Robert H. Olson, Ph.D. rolson@waisman.wisc.edu
 % 2010-8-10 : Added support for multiple output locations
+% 2018-1-08 : Use audioread instead of deprecated wavread if available.
 
 % Was a callback function supplied?
 RUNCALLBACK = (nargin >= 5);
@@ -24,7 +25,11 @@ else
   Repetitions = 1;
 end
 
-[y, freq, nbits] = wavread(AudioFileName);        % Read audio file
+if exist('audioread')
+   [y, freq] = audioread(AudioFileName);        % Read audio file
+else
+   [y, freq] = wavread(AudioFileName);        % Read audio file
+end
 y = y(:,1)';                                      % Pick the first channel and make a row vector
 totaltime = length(y)/freq;
 
