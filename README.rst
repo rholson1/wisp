@@ -8,11 +8,11 @@ WISP is a MATLAB-based program for creating and running experimental paradigms s
 Install Prerequisites
 ---------------------
 
-1. Install Matlab_.  Both 32-bit and 64-bit versions of Matlab are now supported.
+1. Install Matlab_.  The 64-bit version of Matlab is required for compatibility with PsychToolbox.  Note that Matlab R2018a has a bug which will prevent WISP from playing videos; this is fixed in 2018a Update 3.
 
 2. Install PsychToolbox_.
 
-3. Install SMPlayer_, a video playback package which includes MPlayer, the program WISP uses to play videos.
+3. Install SMPlayer_, a video playback package which includes MPlayer, the program WISP uses to play videos.  The version of MPlayer included with SMPlayer 0.8.6 is known to work with WISP.  More recent versions have a modified system for positioning windows on multiple-monitor desktops, and WISP does not yet support the newer approach.
 
 
 Install WISP_
@@ -36,7 +36,7 @@ Install WISP_
 
 .. _Matlab: http://www.mathworks.com
 .. _PsychToolbox: http://psychtoolbox.org
-.. _SMPlayer: http://smplayer.sourceforge.net
+.. _SMPlayer: https://sourceforge.net/projects/smplayer/files/SMPlayer/0.8.6/
 .. _WISP: https://bitbucket.org/rholson1/wisp/get/default.zip
 
 
