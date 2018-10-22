@@ -8,6 +8,7 @@ if verLessThan('matlab', '8.4.0')
 else
    % R2014b or later
    % Convert to format [x1 y1 width height]
-   XY = [mp(:,1) -1*mp(:,2)-(mp(:,4)-mp(end,4))+2];
+   mp = sortrows(mp);
+   XY = [mp(:,1) -1*mp(:,2)-(mp(:,4)-mp(1,4))+2];
    mp = [XY XY+mp(:,3:4)-1];
 end
