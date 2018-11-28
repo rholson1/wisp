@@ -24,6 +24,9 @@ function stopfcn = PlayVideo(C,OL,VideoFileName, Callback, CallbackArg, Loop)
   end
   
   % Loop video?
+  if isempty(Loop)
+      Loop = 0;
+  end
   if Loop
     loopstr = ' -loop 0';
   else
