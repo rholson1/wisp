@@ -18,7 +18,9 @@ Install Prerequisites
 Install WISP_
 -------------
 
-1. In the Branches tab of the Downloads section, you can download the entire WISP_ repository as a .zip file.  Other files in the Downloads section describe a possible hardware setup that could be used with WISP.  Unfortunately, some of the hardware described is no longer available.
+1. In the Branches tab of the Downloads section, you can download the entire WISP_ repository as a .zip file.  Alternatively, if you have git installed, clone the repository using:
+
+   git clone https://github.com/rholson1/wisp.git
 
 2. Copy the WISP folder from the WISP package to some sensible location on your hard disk, such as C:\\toolboxes\\WISP.  If you choose a different location, adjust the following instructions accordingly.
 
