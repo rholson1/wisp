@@ -19,7 +19,7 @@ function OUTPUT_FORMATS = ProcessResults(fnames, outputformat, batchmode)
   %% Validate Arguments
 
   % Make sure outputformat is one of the defined formats
-  OUTPUT_FORMATS = {'Format 1' 'Headturn' 'Headturn2' 'Headturn3' 'Habituation'};
+  OUTPUT_FORMATS = {'Format 1' 'Headturn' 'Headturn2' 'Headturn3' 'Habituation' 'Headturn Reliability'};
   if nargin == 0
     return
   end
@@ -91,7 +91,9 @@ function OUTPUT_FORMATS = ProcessResults(fnames, outputformat, batchmode)
        case 4
         [headers, data, datafmt] = createOutput_headturn3(S);
       case 5
-        [headers, data, datafmt] = createOutput_habituation(S);        
+        [headers, data, datafmt] = createOutput_habituation(S); 
+      case 6
+        [headers, data, datafmt] = createOutput_headturnreliability(S);
       otherwise
         fprintf(1,'find(OFidx) = '), disp(find(OFidx))
         error('ProcessResults:unexpectedValue','find(OFidx) has an unexpected value.')
@@ -350,6 +352,7 @@ function [headers, data, datafmt] = createOutput_headturn(S)
     data{t,13} = S.Results.Gender;
     data{t,14} = AgeInDays;
     data{t,15} = S.Results.Comments'; 
+    %data{t,16} = S.Audio;
     
     data(t,16:15+ConditionCount) = S.Results.Condition(:,2)';
   end
@@ -408,6 +411,11 @@ function [headers, data, datafmt] = createOutput_headturn2(S)
   % Replace Item Number with Item Name (Column 3)
   % Get Output Location from Event 3 rather than Event 2
   
+  % Updates: 11/12/2019 (Martin Zettersten)
+  % change line "if length(S.Results.Trials(t).Events) > 1" to if
+  % "length(S.Results.Trials(t).Events) > 2" to accommodate attention
+  % getters/ different trial types during headturn blocks
+  
   % Compute age at testing (in days) outside of the trial loop for efficiency
   if isempty(S.Results.Birthdate) || isempty(S.Results.DateTime)
     AgeInDays = 0;
@@ -443,7 +451,8 @@ function [headers, data, datafmt] = createOutput_headturn2(S)
     ItemsInPhase = length(S.Experiment.Phases(PhaseNumber).Items);
     data{t,5} = ceil(data{t,1}/ItemsInPhase);   % Compute block based on number of items in phase
     
-    if length(S.Results.Trials(t).Events) > 1
+    %if length(S.Results.Trials(t).Events) > 1
+    if length(S.Results.Trials(t).Events) > 2
       data{t,4} = S.Results.Trials(t).Events(3).Location; % The third event supplies the Output Location here.
     else
       continue
@@ -484,6 +493,57 @@ function [headers, data, datafmt] = createOutput_headturn2(S)
   data = data';
   
 end % createOutput_headturn2
+
+function [headers, data, datafmt] = createOutput_headturnreliability(S)
+  
+  % Headturn Reliability Output Filter
+  % filter each response and tally the total duration recorded for right
+  % (numpad6) and left (numpad4) looks
+  %
+  % -- Output Format --
+  % Column 1: response # / keypress #
+  % Column 2: timestamp from moment key was pressed
+  % Column 3: the key that was pressed
+  % Column 4: duration of the keypress (in s)
+  % Column 5: Experiment Name (Protocol)
+  % Column 6: Subject ID
+  % Column 7: Tester
+  % Column 8: total accumulated keypress time for numpad4 (left looking)
+  % Column 9: total accumulated keypress time for numpad6 (right looking)
+  headers = sprintf(['ResponseNumber\tPressTime\tKey\tLooking Time (ms)\tProtocol\tSubject ID\tTester\ttotalLeftDuration\ttotalRightDuration']);
+ 
+  datafmt = ['%d\t%.8f\t%s\t%f\t%s\t%s\t%s\t%f\t%f\t\n'];
+  
+  nt = length(S.Results.Trials.Responses); % Number of responses
+  
+  data = cell(nt,7); % Initialize data cell array
+  
+  totalNumpad6Duration = 0; %tracks total duration of pressing numpad 6
+  totalNumpad4Duration = 0; %tracks total duration of pressing numpad 6
+  
+  % Loop over responses, completing one row in data array per response
+  for t = 1:nt
+    data{t,1} = t;
+    data{t,2} = S.Results.Trials.Responses(t).PressTime
+    data{t,3} = S.Results.Trials.Responses(t).Keypress
+    data{t,4} = S.Results.Trials.Responses(t).Duration
+    data{t,5} = S.Experiment.Name;
+    data{t,6} = S.Results.SubjectID;
+    data{t,7} = S.Results.Tester;
+    if S.Results.Trials.Responses(t).Keypress == 'numpad4'
+        totalNumpad4Duration = totalNumpad4Duration + S.Results.Trials.Responses(t).Duration;
+    elseif S.Results.Trials.Responses(t).Keypress == 'numpad6'
+        totalNumpad6Duration = totalNumpad6Duration + S.Results.Trials.Responses(t).Duration;
+    end
+        
+  end
+  
+  data(:,8) = {totalNumpad4Duration};
+  data(:,9) = {totalNumpad6Duration};
+
+  data = data';
+  
+end % createOutput_headturnreliability
 
 
 function [headers, data, datafmt] = createOutput_headturn3(S)
@@ -534,6 +594,11 @@ function [headers, data, datafmt] = createOutput_headturn3(S)
   % 2/20/2017
   % Insert column before Protocol with stimulus filename
   
+  % Updates: 11/12/2019 (Martin Zettersten)
+  % change line "if length(S.Results.Trials(t).Events) > 1" to if
+  % "length(S.Results.Trials(t).Events) > 2" to accommodate attention
+  % getters/ different trial types during headturn blocks
+  
   % Compute age at testing (in days) outside of the trial loop for efficiency
   if isempty(S.Results.Birthdate) || isempty(S.Results.DateTime)
     AgeInDays = 0;
@@ -569,7 +634,8 @@ function [headers, data, datafmt] = createOutput_headturn3(S)
     ItemsInPhase = length(S.Experiment.Phases(PhaseNumber).Items);
     data{t,5} = ceil(data{t,1}/ItemsInPhase);   % Compute block based on number of items in phase
     
-    if length(S.Results.Trials(t).Events) > 1
+    %if length(S.Results.Trials(t).Events) > 1
+    if length(S.Results.Trials(t).Events) > 2 
       data{t,4} = S.Results.Trials(t).Events(2).Location; % The second event is the right or left light, by convention
     else
       continue
