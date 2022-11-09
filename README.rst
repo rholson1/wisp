@@ -39,6 +39,6 @@ Install WISP_
 .. _Matlab: http://www.mathworks.com
 .. _PsychToolbox: http://psychtoolbox.org
 .. _SMPlayer: https://sourceforge.net/projects/smplayer/files/SMPlayer/0.8.6/
-.. _WISP: https://bitbucket.org/rholson1/wisp/get/default.zip
+.. _WISP: https://github.com/rholson1/wisp/archive/refs/heads/master.zip
 
 
